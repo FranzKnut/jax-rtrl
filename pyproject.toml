@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "jax-rtrl"
+version = "0.1.0"
+description = ""
+authors = ["julian <julian.lemmel@tuwien.ac.at>"]
+readme = "README.md"
+packages = [{include = "jax_rtrl"}]
+
+[tool.poetry.dependencies]
+python = "^3.8"
+scikit-learn = "^1.2.0"
+netcomp = "^0.2.3"
+pyemd = "^0.5.1"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
