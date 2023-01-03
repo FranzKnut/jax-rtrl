@@ -1,4 +1,6 @@
-import sys, os
+import os
+import sys
+
 sys.path.append(os.path.abspath('..'))
 import numpy as np
 from core import Simulation
@@ -28,18 +30,17 @@ def generate_ergodic_markov_task(one_hot_dim=4, n_inputs=4, idem=True):
                 T[i_fp, perm[i_fp]] = 1
 
             if idem:
-                #force to be idempotent
+                # force to be idempotent
                 for i_fp in np.random.permutation(range(n_states)):
-                    if T[:,i_fp].sum() > 0:
+                    if T[:, i_fp].sum() > 0:
                         T[i_fp, :] = np.eye(n_states)[i_fp]
 
-                #check if idempotent
+                # check if idempotent
                 assert (T == T.dot(T)).all()
 
             T_dict['input_{}'.format(i_input)] = T
 
         T_avg = sum([T for T in T_dict.values()]) / len(T_dict.keys())
-
 
         T_power = np.round(np.linalg.matrix_power(T_avg, 1000), 2)
 
@@ -47,6 +48,7 @@ def generate_ergodic_markov_task(one_hot_dim=4, n_inputs=4, idem=True):
             done = True
 
     return FPs, T_dict
+
 
 def concatenate_datasets(data_1, data_2):
     """Takes in two data dicts of form in gen_data and concatenates the data
@@ -60,17 +62,16 @@ def concatenate_datasets(data_1, data_2):
 
     return data
 
-def get_multitask_loss_from_checkpoints(sim, multitask, N_test):
 
+def get_multitask_loss_from_checkpoints(sim, multitask, N_test):
     data = multitask.gen_data(0, N_test)
 
-    #set_trace()
+    # set_trace()
 
     losses = {'task_{}_loss'.format(i): [] for i in range(multitask.n_tasks)}
 
     for i in range(multitask.n_tasks):
         for j in sorted(sim.checkpoints.keys()):
-
             rnn = sim.checkpoints[j]['rnn']
             test_sim = Simulation(rnn)
             test_sim.run(data,
@@ -86,16 +87,15 @@ def get_multitask_loss_from_checkpoints(sim, multitask, N_test):
 
     return losses
 
-def get_loss_from_checkpoints(sim, task, N_test):
 
+def get_loss_from_checkpoints(sim, task, N_test):
     data = task.gen_data(0, N_test)
 
-    #set_trace()
+    # set_trace()
 
     losses = []
 
     for j in sorted(sim.checkpoints.keys()):
-
         rnn = sim.checkpoints[j]['rnn']
         test_sim = Simulation(rnn)
         test_sim.run(data,

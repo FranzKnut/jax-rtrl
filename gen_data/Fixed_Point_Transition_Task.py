@@ -1,5 +1,7 @@
 import numpy as np
+
 from gen_data.Task import Task
+
 
 class Fixed_Point_Transition_Task(Task):
     """A task where a given number of states in output space is provided,
@@ -39,7 +41,7 @@ class Fixed_Point_Transition_Task(Task):
 
         super().__init__(len(T_dict.keys()), states[0].shape[0])
 
-        #Assert dimensional consistency
+        # Assert dimensional consistency
         assert len(np.unique([state.shape[0] for state in states])) == 1
         for val in T_dict.values():
             assert self.n_states == val.shape[0]
@@ -47,21 +49,21 @@ class Fixed_Point_Transition_Task(Task):
 
     def gen_dataset(self, N):
 
-        #Indicate time steps where transition occurs
+        # Indicate time steps where transition occurs
         p = [1 - self.p_transition, self.p_transition]
         sparsity_mask = np.random.choice([0, 1], size=N, p=p)
-        sparsity_mask[0] = 0 #No transition at first time step
+        sparsity_mask[0] = 0  # No transition at first time step
         T_times = np.where(sparsity_mask != 0)[0]
 
-        #Sample particular transition types
-        I_X = np.random.randint(0, self.n_in, size=N) #* sparsity_mask
-        X = np.eye(self.n_in)[I_X] #Turn into one-hot
+        # Sample particular transition types
+        I_X = np.random.randint(0, self.n_in, size=N)  # * sparsity_mask
+        X = np.eye(self.n_in)[I_X]  # Turn into one-hot
 
-        #apply sparsity
+        # apply sparsity
         I_X *= sparsity_mask
         X = (X.T * sparsity_mask).T
 
-        #Set up initial state
+        # Set up initial state
         I_Y = [np.random.randint(self.n_states)]
         decay_factors = []
         last_T_time = 0
@@ -69,15 +71,15 @@ class Fixed_Point_Transition_Task(Task):
 
             delta_T = T_time - last_T_time
 
-            #Backfill all the last "same" states since last transition
+            # Backfill all the last "same" states since last transition
             I_Y += ([I_Y[-1]] * (delta_T - 1))
 
-            #Backfill the decay factors in based on time constant
+            # Backfill the decay factors in based on time constant
             decay_factors.append(np.exp(-self.tau_decay * np.arange(0, delta_T)))
 
-            #Access current transition and associated graph
+            # Access current transition and associated graph
             i_input = I_X[T_time]
-            #set_trace()
+            # set_trace()
             key = 'input_{}'.format(i_input)
             T_matrix = self.T_dict[key]
 
@@ -90,13 +92,13 @@ class Fixed_Point_Transition_Task(Task):
 
             last_T_time = T_time
 
-        #Final state
+        # Final state
 
         delta_T = len(I_X) - last_T_time
         I_Y += ([I_Y[-1]] * (delta_T - 1))
         decay_factors.append(np.exp(-self.tau_decay * np.arange(0, delta_T)))
 
-        #Convert state indices to actual states, multiply by decay factors
+        # Convert state indices to actual states, multiply by decay factors
         decay_factors = np.concatenate(decay_factors)
         Y = (np.array([self.states[i_y] for i_y in I_Y]).T * decay_factors).T
 

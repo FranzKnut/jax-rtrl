@@ -1,8 +1,11 @@
-import os, pickle
+import pickle
+from math import ceil
+
+from scipy import sparse
+
 from cluster import unpack_analysis_results
 from dynamics import *
-from scipy import sparse
-from math import ceil
+
 
 def cross_compare_analyzed_checkpoints(saved_run_root_name,
                                        compare_args,
@@ -37,7 +40,6 @@ def cross_compare_analyzed_checkpoints(saved_run_root_name,
     else:
         saved_runs_dir = os.path.join(notebook_dir, 'saved_runs')
 
-
     ### --- Loop through each individual analysis job --- ###
 
     analysis_job_names = ['analyze_' + sr for sr in os.listdir(saved_runs_dir)
@@ -48,7 +50,7 @@ def cross_compare_analyzed_checkpoints(saved_run_root_name,
         hashes = [''] * len(analysis_job_names)
         for key in compare_args['cross_param_ordering']:
             for i_ajn, ajn in enumerate(analysis_job_names):
-                value = ajn.split(key+'=')[-1].split('_')[0]
+                value = ajn.split(key + '=')[-1].split('_')[0]
                 hashes[i_ajn] += value
         analysis_job_names = [analysis_job_names[i] for i in np.argsort(hashes)]
 
@@ -111,13 +113,13 @@ def cross_compare_analyzed_checkpoints(saved_run_root_name,
     if weight_change_alignment:
         weight_change_alignment_distances = np.zeros((n_checkpoints, n_checkpoints))
 
-    #Compare window
+    # Compare window
     if compare_args['n_comp_window'] == 'full':
         n_comp_window = len(all_indices) - 1
     else:
         n_comp_window = compare_args['n_comp_window']
 
-    #Job distribution arithmetic
+    # Job distribution arithmetic
     comp_overflow = n_comp_window * (n_comp_window + 1) / 2
     total_comps = n_comp_window * n_checkpoints - comp_overflow
     comps_per_job = ceil(total_comps / compare_args['n_comp_jobs'])
@@ -193,9 +195,9 @@ def cross_compare_analyzed_checkpoints(saved_run_root_name,
 
             if compare_args['align_checkpoints']:
                 try:
-                    #align_checkpoints_based_on_output(checkpoint_2, checkpoint_1,
+                    # align_checkpoints_based_on_output(checkpoint_2, checkpoint_1,
                     #                                  n_inputs=compare_args['n_inputs'])
-                    #align_checkpoints_based_on_output(checkpoint_2, checkpoint_1,
+                    # align_checkpoints_based_on_output(checkpoint_2, checkpoint_1,
                     #                                  n_inputs=compare_args['n_inputs'])
                     pass
                 except ValueError:
@@ -233,7 +235,8 @@ def cross_compare_analyzed_checkpoints(saved_run_root_name,
                                                                        checkpoint_2,
                                                                        node_diff_penalty=0,
                                                                        n_inputs=compare_args['n_inputs'],
-                                                                       minimize_over_permutations=compare_args['minimize_over_permutations'])
+                                                                       minimize_over_permutations=compare_args[
+                                                                           'minimize_over_permutations'])
             if node_diff:
                 node_diff_distances[i, j] = node_diff_distance(checkpoint_1,
                                                                checkpoint_2)
@@ -246,7 +249,7 @@ def cross_compare_analyzed_checkpoints(saved_run_root_name,
                                                                  checkpoint_2)
             if output_weight:
                 output_weight_distances[i, j] = output_weight_distance(checkpoint_1,
-                                                                      checkpoint_2)
+                                                                       checkpoint_2)
             if weight_change_alignment:
                 weight_change_alignment_distances[i, j] = weight_change_alignment_distance(checkpoint_1,
                                                                                            checkpoint_2)

@@ -1,5 +1,7 @@
-from optimizers.Optimizer import Optimizer
 import numpy as np
+
+from optimizers.Optimizer import Optimizer
+
 
 class Stochastic_Gradient_Descent(Optimizer):
     """Implements basic stochastic gradient descent optimizer.
@@ -39,4 +41,3 @@ class Stochastic_Gradient_Descent(Optimizer):
             updated_params.append(param + v)
 
         return updated_params
-

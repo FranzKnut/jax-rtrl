@@ -1,5 +1,6 @@
 import numpy as np
 
+
 class Optimizer:
     """Parent class for gradient-based optimizers."""
 
@@ -13,7 +14,7 @@ class Optimizer:
                 raise TypeError('Unexpected keyword argument '
                                 'passed to Optimizer: ' + str(k))
 
-        #Set all non-specified kwargs to None
+        # Set all non-specified kwargs to None
         for attr in allowed_kwargs:
             if not hasattr(self, attr):
                 setattr(self, attr, None)
@@ -33,7 +34,7 @@ class Optimizer:
         if grad_norm > self.clip_norm:
             clipped_grads = []
             for grad in grads:
-                clipped_grads.append(grad * (self.clip_norm/grad_norm))
+                clipped_grads.append(grad * (self.clip_norm / grad_norm))
             return clipped_grads
         else:
             return grads

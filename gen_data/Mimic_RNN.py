@@ -1,5 +1,7 @@
 import numpy as np
+
 from gen_data.Task import Task
+
 
 class Mimic_RNN(Task):
     """Class for the 'Mimic Task,' where the inputs are random i.i.d. Bernoulli
@@ -16,7 +18,7 @@ class Mimic_RNN(Task):
             tau_task (int): The temporal stretching factor for the inputs, see
                 tau_task in Add_Task."""
 
-        #Initialize as Task object with dims inherited from the target RNN.
+        # Initialize as Task object with dims inherited from the target RNN.
         super().__init__(rnn.n_in, rnn.n_out)
 
         self.rnn = rnn
@@ -31,7 +33,7 @@ class Mimic_RNN(Task):
         binomial distribution and temporally stretching them by tau_task,
         then feeding these inputs to the target RNN."""
 
-        #Generate inputs
+        # Generate inputs
         N = N // self.tau_task
         X = []
         for i in range(N):
@@ -42,9 +44,9 @@ class Mimic_RNN(Task):
             else:
                 x = np.random.binomial(1, self.p_input, self.n_in)
             X.append(x)
-        X = np.tile(X, self.tau_task).reshape((self.tau_task*N, self.n_in))
+        X = np.tile(X, self.tau_task).reshape((self.tau_task * N, self.n_in))
 
-        #Get RNN responses
+        # Get RNN responses
         Y = []
         self.rnn.reset_network(h=np.zeros(self.rnn.n_h))
         for i in range(len(X)):

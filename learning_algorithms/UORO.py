@@ -1,6 +1,8 @@
-from learning_algorithms.Stochastic_Algorithm import Stochastic_Algorithm
 import numpy as np
+
+from learning_algorithms.Stochastic_Algorithm import Stochastic_Algorithm
 from utils import norm
+
 
 class UORO(Stochastic_Algorithm):
     """Implements the Unbiased Online Recurrent Optimization (UORO) algorithm
@@ -48,12 +50,12 @@ class UORO(Stochastic_Algorithm):
                 'uniform' to indicate what type of distribution nu should sample
                  from. Default is 'discrete'."""
 
-        self.name = 'UORO' #Default algorithm name
+        self.name = 'UORO'  # Default algorithm name
         allowed_kwargs_ = {'epsilon', 'P0', 'P1', 'A', 'B', 'nu_dist'}
         super().__init__(rnn, allowed_kwargs_, **kwargs)
         self.n_nu = self.n_h
 
-        #Initialize A and B arrays
+        # Initialize A and B arrays
         if self.A is None:
             self.A = np.random.normal(0, 1, self.n_h)
         if self.B is None:
@@ -68,14 +70,14 @@ class UORO(Stochastic_Algorithm):
                 product approximation B, A. If False, only prepares for calling
                 get_influence_estimate."""
 
-        #Get relevant values and derivatives from network
+        # Get relevant values and derivatives from network
         self.a_hat = np.concatenate([self.rnn.a_prev,
                                      self.rnn.x,
                                      np.array([1])])
         D = self.rnn.alpha * self.rnn.activation.f_prime(self.rnn.h)
-        #Compact form of M_immediate
+        # Compact form of M_immediate
         self.papw = np.multiply.outer(D, self.a_hat)
-        self.rnn.get_a_jacobian() #Get updated network Jacobian
+        self.rnn.get_a_jacobian()  # Get updated network Jacobian
 
         A, B = self.get_influence_estimate()
 
@@ -93,47 +95,47 @@ class UORO(Stochastic_Algorithm):
             Updated A (numpy array of shape (n_h)) and B (numpy array of shape
                 (n_h, m))."""
 
-        #Sample random vector
+        # Sample random vector
         self.nu = self.sample_nu()
 
-        #Get random projection of M_immediate onto \nu
-        M_projection = (self.papw.T*self.nu).T
+        # Get random projection of M_immediate onto \nu
+        M_projection = (self.papw.T * self.nu).T
 
-        if self.epsilon is not None: #Forward differentiation method
+        if self.epsilon is not None:  # Forward differentiation method
             eps = self.epsilon
-            #Get perturbed state in direction of A
+            # Get perturbed state in direction of A
             self.a_perturbed = self.rnn.a_prev + eps * self.A
-            #Get hypothetical next states from this perturbation
+            # Get hypothetical next states from this perturbation
             self.a_perturbed_next = self.rnn.next_state(self.rnn.x,
                                                         self.a_perturbed,
                                                         update=False)
-            #Get forward-propagated A
+            # Get forward-propagated A
             self.A_forwards = (self.a_perturbed_next - self.rnn.a) / eps
-            #Calculate scaling factors
+            # Calculate scaling factors
             B_norm = norm(self.B)
             A_norm = norm(self.A_forwards)
             M_norm = norm(M_projection)
-            self.p0 = np.sqrt(B_norm/(A_norm + eps)) + eps
-            self.p1 = np.sqrt(M_norm/(np.sqrt(self.n_h) + eps)) + eps
-        else: #Backpropagation method
-            #Get forward-propagated A
+            self.p0 = np.sqrt(B_norm / (A_norm + eps)) + eps
+            self.p1 = np.sqrt(M_norm / (np.sqrt(self.n_h) + eps)) + eps
+        else:  # Backpropagation method
+            # Get forward-propagated A
             self.A_forwards = self.rnn.a_J.dot(self.A)
-            #Calculate scaling factors
+            # Calculate scaling factors
             B_norm = norm(self.B)
             A_norm = norm(self.A_forwards)
             M_norm = norm(M_projection)
-            self.p0 = np.sqrt(B_norm/A_norm)
-            self.p1 = np.sqrt(M_norm/np.sqrt(self.n_h))
+            self.p0 = np.sqrt(B_norm / A_norm)
+            self.p1 = np.sqrt(M_norm / np.sqrt(self.n_h))
 
-        #Override with fixed P0 and P1 if given
+        # Override with fixed P0 and P1 if given
         if self.P0 is not None:
             self.p0 = np.copy(self.P0)
         if self.P1 is not None:
             self.p1 = np.copy(self.P1)
 
-        #Update outer product approximation
+        # Update outer product approximation
         A = self.p0 * self.A_forwards + self.p1 * self.nu
-        B = (1/self.p0) * self.B + (1 / self.p1) * M_projection
+        B = (1 / self.p0) * self.B + (1 / self.p1) * M_projection
 
         return A, B
 
@@ -148,7 +150,7 @@ class UORO(Stochastic_Algorithm):
         Returns:
             An array of shape (n_h, m) representing the recurrent gradient."""
 
-        self.Q = self.q.dot(self.A) #"Global learning signal"
+        self.Q = self.q.dot(self.A)  # "Global learning signal"
         return (self.Q * self.B)
 
     def reset_learning(self):

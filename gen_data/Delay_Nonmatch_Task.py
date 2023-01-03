@@ -1,5 +1,7 @@
 import numpy as np
+
 from gen_data.Task import Task
+
 
 class Delay_Nonmatch_Task(Task):
     """Class for a simple working memory task, where two binary inputs are
@@ -47,7 +49,7 @@ class Delay_Nonmatch_Task(Task):
         self.t_report = self.t_stim_2 + stim_duration + delay_duration
         self.off_report_loss_factor = off_report_loss_factor
 
-        #Make mask for preferential learning within task
+        # Make mask for preferential learning within task
         self.trial_mask = np.ones(self.time_steps_per_trial)
         self.trial_mask *= self.off_report_loss_factor
         self.trial_mask[self.t_report:self.t_report + self.report_duration] = 1
@@ -62,28 +64,28 @@ class Delay_Nonmatch_Task(Task):
         trial_switch = []
         loss_mask = []
 
-        #Trial type 1 AA
+        # Trial type 1 AA
         x_1 = np.zeros((self.time_steps_per_trial, 2))
         y_1 = np.zeros((self.time_steps_per_trial, 2))
         x_1[self.t_stim_1:self.t_stim_1 + self.stim_duration, 0] = 1
         x_1[self.t_stim_2:self.t_stim_2 + self.stim_duration, 0] = 1
         y_1[self.t_report:self.t_report + self.report_duration, 0] = 1
 
-        #Trial type 2 AB
+        # Trial type 2 AB
         x_2 = np.zeros((self.time_steps_per_trial, 2))
         y_2 = np.zeros((self.time_steps_per_trial, 2))
         x_2[self.t_stim_1:self.t_stim_1 + self.stim_duration, 0] = 1
         x_2[self.t_stim_2:self.t_stim_2 + self.stim_duration, 1] = 1
         y_2[self.t_report:self.t_report + self.report_duration, 1] = 1
 
-        #Trial type 3 BA
+        # Trial type 3 BA
         x_3 = np.zeros((self.time_steps_per_trial, 2))
         y_3 = np.zeros((self.time_steps_per_trial, 2))
         x_3[self.t_stim_1:self.t_stim_1 + self.stim_duration, 1] = 1
         x_3[self.t_stim_2:self.t_stim_2 + self.stim_duration, 0] = 1
         y_3[self.t_report:self.t_report + self.report_duration, 1] = 1
 
-        #Trial type 4 BB
+        # Trial type 4 BB
         x_4 = np.zeros((self.time_steps_per_trial, 2))
         y_4 = np.zeros((self.time_steps_per_trial, 2))
         x_4[self.t_stim_1:self.t_stim_1 + self.stim_duration, 1] = 1
@@ -95,7 +97,6 @@ class Delay_Nonmatch_Task(Task):
 
         N_trials = N // self.time_steps_per_trial
         for i in range(N_trials):
-
             trial_type_ = np.random.choice([0, 1, 2, 3])
             trial_type_array = np.ones(self.time_steps_per_trial) * trial_type_
             trial_type.append(trial_type_array.astype(np.int))

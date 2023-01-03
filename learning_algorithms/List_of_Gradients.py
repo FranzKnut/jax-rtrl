@@ -1,5 +1,6 @@
 from learning_algorithms.Learning_Algorithm import Learning_Algorithm
 
+
 class List_of_Gradients(Learning_Algorithm):
     """Simply prescribe a series of updates to the network"""
 

@@ -1,5 +1,7 @@
 import numpy as np
+
 from gen_data.Task import Task
+
 
 class Flip_Flop_Task(Task):
     """Class for the N-bit flip-flop task.
@@ -11,7 +13,7 @@ class Flip_Flop_Task(Task):
 
     def __init__(self, n_bit, p_flip, tau_task=1, p_context_flip=None,
                  input_magnitudes=None,
-                 x_dim_mask=[1,1,1], y_dim_mask=[1,1,1]):
+                 x_dim_mask=[1, 1, 1], y_dim_mask=[1, 1, 1]):
         """Initiates an instance of the n-bit flip flop task by specifying the
         probability of a nonzero input and timescale of the task.
 
@@ -30,7 +32,6 @@ class Flip_Flop_Task(Task):
             n_in += 1
 
         super().__init__(n_in, n_out)
-
 
         self.p_flip = p_flip
         self.tau_task = tau_task
@@ -52,7 +53,7 @@ class Flip_Flop_Task(Task):
         probability = [self.p_flip / 2, 1 - self.p_flip, self.p_flip / 2]
         choices = [-1, 0, 1]
         X = np.random.choice(choices, size=(N, self.n_bit), p=probability)
-        X = np.tile(X, self.tau_task).reshape((self.tau_task*N, self.n_bit))
+        X = np.tile(X, self.tau_task).reshape((self.tau_task * N, self.n_bit))
         Y = X.copy()
         for k in range(int(np.ceil(np.log2(N)))):
             Y[2 ** k:] = np.sign(Y[2 ** k:] + Y[:-2 ** k] / 2)
@@ -79,7 +80,7 @@ class Flip_Flop_Task(Task):
 
             X[np.where(x_context == -1), :-1] *= -1
 
-        #Mask any dimensions
+        # Mask any dimensions
         X = X * self.x_dim_mask
         Y = Y * self.y_dim_mask
 

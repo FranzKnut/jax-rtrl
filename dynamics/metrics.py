@@ -1,5 +1,6 @@
 import numpy as np
 
+
 def assign_time_points_to_stages(loss, d_top, performance_criterion,
                                  topological_criterion, loss_window=10,
                                  topological_window=10, filter_traces=True,
@@ -26,8 +27,6 @@ def assign_time_points_to_stages(loss, d_top, performance_criterion,
 
     We measure this by doing a causal (backwards-looking) convolution of the
     signal"""
-
-
 
     if filter_traces:
         convolved_loss, convolved_metric = filter_loss_and_dtop(loss, d_top,
@@ -60,12 +59,13 @@ def assign_time_points_to_stages(loss, d_top, performance_criterion,
         sa, tst = post_process_stage_assignments(stage_assignments,
                                                  time_point_trigger=time_point_trigger)
 
-        #sa = stage assignments
-        #tst = time of stage transitions
+        # sa = stage assignments
+        # tst = time of stage transitions
 
         return sa, tst
     else:
         return stage_assignments
+
 
 def post_process_stage_assignments(stage_assignments, time_point_trigger=4):
     """For a given set of stage assignments, performs post processing by making
@@ -76,20 +76,20 @@ def post_process_stage_assignments(stage_assignments, time_point_trigger=4):
     this is considered the "transition point," and we repeat for stage 3 and 4.
     """
 
-    #Copy original stage assignments
+    # Copy original stage assignments
     ret = stage_assignments.copy()
     t_stage_transition_prev = 0
     t_stage_transitions = []
 
     for i_stage in [2, 3, 4]:
 
-        #Find points assigned to stage i_stage
+        # Find points assigned to stage i_stage
         stage_i_points = (stage_assignments == i_stage)
 
-        #Transition times
+        # Transition times
         stage_i_transitions = (stage_assignments == i_stage)
 
-        #Roll array a number of time steps forward as specified by time_point_trigger
+        # Roll array a number of time steps forward as specified by time_point_trigger
         for i_roll in range(1, time_point_trigger):
             stage_roll = np.roll(stage_i_points, -i_roll)
             stage_i_transitions = np.logical_and(stage_i_transitions,
@@ -100,7 +100,7 @@ def post_process_stage_assignments(stage_assignments, time_point_trigger=4):
         except IndexError:
             t_stage_transition = None
 
-        #Put everything up to stage n transition in stage n-1
+        # Put everything up to stage n transition in stage n-1
         if t_stage_transition_prev is not None:
             ret[t_stage_transition_prev:t_stage_transition] = i_stage - 1
 
@@ -112,6 +112,7 @@ def post_process_stage_assignments(stage_assignments, time_point_trigger=4):
         ret[t_stage_transition_prev:] = 4
 
     return ret, t_stage_transitions
+
 
 def filter_loss_and_dtop(loss, d_top, loss_window=10, topological_window=10):
     """Perform the filtering of the relevant traces in isolation"""

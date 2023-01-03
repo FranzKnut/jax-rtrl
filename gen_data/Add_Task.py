@@ -1,5 +1,7 @@
 import numpy as np
+
 from gen_data.Task import Task
+
 
 class Add_Task(Task):
     """Class for the 'Add Task', an input-label mapping with i.i.d. Bernoulli
@@ -31,21 +33,21 @@ class Add_Task(Task):
                 for 3 time steps before being replaced by a new random
                 sample."""
 
-        #Initialize a parent Task object with 2 input and 2 output dimensions.
+        # Initialize a parent Task object with 2 input and 2 output dimensions.
         super().__init__(2, 2)
 
-        #Dependencies in coin task
+        # Dependencies in coin task
         self.t_1 = t_1
         self.t_2 = t_2
         self.tau_task = tau_task
 
-        #Use coin flip outputs or deterministic probabilities as labels
+        # Use coin flip outputs or deterministic probabilities as labels
         self.deterministic = deterministic
 
     def gen_dataset(self, N):
         """Generates a dataset according to Eq. (1)."""
 
-        #Generate random bernoulli inputs and labels according to Eq. (1).
+        # Generate random bernoulli inputs and labels according to Eq. (1).
         N = N // self.tau_task
         x = np.random.binomial(1, 0.5, N)
         y = 0.5 + 0.5 * np.roll(x, self.t_1) - 0.25 * np.roll(x, self.t_2)
@@ -54,8 +56,8 @@ class Add_Task(Task):
         X = np.array([x, 1 - x]).T
         Y = np.array([y, 1 - y]).T
 
-        #Temporally stretch according to the desire timescale of change.
-        X = np.tile(X, self.tau_task).reshape((self.tau_task*N, 2))
-        Y = np.tile(Y, self.tau_task).reshape((self.tau_task*N, 2))
+        # Temporally stretch according to the desire timescale of change.
+        X = np.tile(X, self.tau_task).reshape((self.tau_task * N, 2))
+        Y = np.tile(Y, self.tau_task).reshape((self.tau_task * N, 2))
 
         return X, Y, None, None, None

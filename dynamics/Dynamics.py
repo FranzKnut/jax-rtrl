@@ -1,9 +1,12 @@
 from sklearn.cluster import DBSCAN
+
 from dynamics.topology import *
+
 try:
     import umap
 except ModuleNotFoundError:
     pass
+
 
 def analyze_all_checkpoints(checkpoints, func, test_data, **kwargs):
     """For a given analysis function and a list of checkpoints, applies
@@ -16,6 +19,7 @@ def analyze_all_checkpoints(checkpoints, func, test_data, **kwargs):
 
     return results
 
+
 def analyze_checkpoint(checkpoint, data, N_iters=8000,
                        same_LR_criterion=5000, N=200,
                        n_PCs=3, context=None, KE_criterion=None,
@@ -23,16 +27,15 @@ def analyze_checkpoint(checkpoint, data, N_iters=8000,
                        sigma=0,
                        DB_eps=0.5,
                        **kwargs):
-
     print('Analyzing checkpoint {}...'.format(checkpoint['i_t']))
 
     rnn = checkpoint['rnn']
     test_sim = Simulation(rnn)
     test_sim.run(data,
-                  mode='test',
-                  monitors=['rnn.loss_', 'rnn.y_hat', 'rnn.a'],
-                  verbose=False,
-                  sigma=sigma)
+                 mode='test',
+                 monitors=['rnn.loss_', 'rnn.y_hat', 'rnn.a'],
+                 verbose=False,
+                 sigma=sigma)
 
     transform = Vanilla_PCA(checkpoint, data, n_PCs=n_PCs, sigma=sigma)
     V = transform(np.eye(rnn.n_h))
@@ -93,7 +96,7 @@ def analyze_checkpoint(checkpoint, data, N_iters=8000,
     cluster_eigs = np.array(cluster_eigs)
     cluster_KEs = np.array(cluster_KEs)
 
-    #Save results
+    # Save results
     checkpoint['fixed_points'] = A
     checkpoint['KE'] = KE
     checkpoint['KE_criterion'] = KE_criterion
@@ -108,6 +111,7 @@ def analyze_checkpoint(checkpoint, data, N_iters=8000,
     if reference_checkpoint is not None:
         align_checkpoints(reference_checkpoint, checkpoint)
 
+
 ### --- ANALYSIS METHODS --- ###
 
 def Vanilla_PCA(checkpoint, test_data, n_PCs=3, sigma=0):
@@ -118,9 +122,10 @@ def Vanilla_PCA(checkpoint, test_data, n_PCs=3, sigma=0):
 
     checkpoint['participation_coef'] = np.square(S.sum()) / np.square(S).sum()
 
-    transform = partial(np.dot, b=VT.T[:,:n_PCs])
+    transform = partial(np.dot, b=VT.T[:, :n_PCs])
 
     return transform
+
 
 def UMAP_(checkpoint, test_data, n_components=3, **kwargs):
     """Performs  UMAP with default parameters and returns component axes."""
@@ -130,5 +135,3 @@ def UMAP_(checkpoint, test_data, n_components=3, **kwargs):
     u = fit.fit_transform(test_a)
 
     return fit.transform
-
-

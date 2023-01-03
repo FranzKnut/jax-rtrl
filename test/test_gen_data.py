@@ -1,7 +1,10 @@
-import sys, os
+import os
+import sys
+
 sys.path.append(os.path.abspath('..'))
 import unittest
 from gen_data import *
+
 
 class Test_Gen_Data(unittest.TestCase):
     """Tests methods from the RNN.py module."""
@@ -22,29 +25,29 @@ class Test_Gen_Data(unittest.TestCase):
 
         for i in range(12, 25):
             y = (0.5 +
-                 0.5*data['train']['X'][i-6, 0] -
-                 0.25*data['train']['X'][i-10, 0])
+                 0.5 * data['train']['X'][i - 6, 0] -
+                 0.25 * data['train']['X'][i - 10, 0])
             self.assertEqual(data['train']['Y'][i, 0], y)
 
         task = Add_Task(6, 10, deterministic=True, tau_task=2)
         data = task.gen_data(50, 0)
 
         for i in range(25, 40):
-            if i%2 == 1:
+            if i % 2 == 1:
                 x1 = data['train']['X'][i, 0]
-                x2 = data['train']['X'][i-1, 0]
+                x2 = data['train']['X'][i - 1, 0]
                 self.assertEqual(x1, x2)
                 y = (0.5 +
-                     0.5*data['train']['X'][i-12, 0] -
-                     0.25*data['train']['X'][i-20, 0])
+                     0.5 * data['train']['X'][i - 12, 0] -
+                     0.25 * data['train']['X'][i - 20, 0])
                 self.assertEqual(data['train']['Y'][i, 0], y)
-            if i%2 == 0:
+            if i % 2 == 0:
                 x1 = data['train']['X'][i, 0]
-                x2 = data['train']['X'][i+1, 0]
+                x2 = data['train']['X'][i + 1, 0]
                 self.assertEqual(x1, x2)
                 y = (0.5 +
-                     0.5*data['train']['X'][i-11, 0] -
-                     0.25*data['train']['X'][i-19, 0])
+                     0.5 * data['train']['X'][i - 11, 0] -
+                     0.25 * data['train']['X'][i - 19, 0])
                 self.assertEqual(data['train']['Y'][i, 0], y)
 
     def test_mimic_task(self):
@@ -94,8 +97,8 @@ class Test_Gen_Data(unittest.TestCase):
         y_2 = np.array([[0.5, 0.5, 0], [0.5, 0.5, 1]]).T
 
         for i in range(4):
-            x = data['train']['X'][3 * i : 3 * (i + 1)]
-            y = data['train']['Y'][3 * i : 3 * (i + 1)]
+            x = data['train']['X'][3 * i: 3 * (i + 1)]
+            y = data['train']['Y'][3 * i: 3 * (i + 1)]
 
             self.assertTrue(np.isclose(x, x_1).all() or
                             np.isclose(x, x_2).all())
@@ -111,11 +114,11 @@ class Test_Gen_Data(unittest.TestCase):
 
             self.assertTrue(len(data['train']['X']) == 84)
             for i in range(27):
-                self.assertTrue(np.isclose(data['train']['Y'][i,:],
-                                           data['train']['Y'][i+1,:]).all())
+                self.assertTrue(np.isclose(data['train']['Y'][i, :],
+                                           data['train']['Y'][i + 1, :]).all())
             for i in range(28, 55):
-                self.assertTrue(np.isclose(data['train']['Y'][i,:],
-                                           data['train']['Y'][i+1,:]).all())
+                self.assertTrue(np.isclose(data['train']['Y'][i, :],
+                                           data['train']['Y'][i + 1, :]).all())
         except FileNotFoundError:
             pass
 
@@ -135,8 +138,9 @@ class Test_Gen_Data(unittest.TestCase):
         task = Discrete_Integration_Task(p_bit=0.5, p_reset=0)
         data = task.gen_data(20, 0)
 
-        self.assertTrue(np.isclose(np.sign(np.cumsum(data['train']['X'][:,0])),
-                                   data['train']['Y'][:,0]).all())
+        self.assertTrue(np.isclose(np.sign(np.cumsum(data['train']['X'][:, 0])),
+                                   data['train']['Y'][:, 0]).all())
 
-if __name__=='__main__':
+
+if __name__ == '__main__':
     unittest.main()

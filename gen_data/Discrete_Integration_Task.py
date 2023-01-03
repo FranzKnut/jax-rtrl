@@ -1,6 +1,9 @@
-import numpy as np
-from gen_data.Task import Task
 from math import floor
+
+import numpy as np
+
+from gen_data.Task import Task
+
 
 class Discrete_Integration_Task(Task):
     """Class for the 1-dimensional discrete integration task."""
@@ -46,7 +49,7 @@ class Discrete_Integration_Task(Task):
 
     def gen_dataset_1(self, N):
 
-        #N = N // self.tau_task
+        # N = N // self.tau_task
 
         probability = [self.p_bit / 2, 1 - self.p_bit, self.p_bit / 2]
         choices = [-1, 0, 1]
@@ -92,14 +95,14 @@ class Discrete_Integration_Task(Task):
             final_net_count = np.random.randint(low=-self.max_count,
                                                 high=self.max_count + 1)
             min_positive = np.maximum(0, final_net_count)
-            #from pdb import set_trace
-            #set_trace()
+            # from pdb import set_trace
+            # set_trace()
             max_positive = floor(0.5 * (self.max_total_inputs + final_net_count))
             final_positive_count = np.random.randint(low=min_positive,
                                                      high=max_positive + 1)
             final_negative_count = final_positive_count - final_net_count
 
-            #Randomly put these positive and negative counts into boxes
+            # Randomly put these positive and negative counts into boxes
             x_trial = np.zeros((period + self.delay, 3))
             time_indices = list(range(period))
             positive_input_indices = np.random.choice(time_indices,
@@ -113,8 +116,8 @@ class Discrete_Integration_Task(Task):
 
             x_trial[positive_input_indices, 0] = 1
             x_trial[negative_input_indices, 0] = -1
-            x_trial[0, 1] = 1 #signal to start of new trial
-            x_trial[period, 2] = self.delay_hint #signal to start of delay period
+            x_trial[0, 1] = 1  # signal to start of new trial
+            x_trial[period, 2] = self.delay_hint  # signal to start of delay period
 
             X.append(x_trial)
 
@@ -132,9 +135,9 @@ class Discrete_Integration_Task(Task):
             trial_switch.append(trial_switch_array)
 
             BPR_mask_array = np.array([self.BPR_integrate_mask] * period
-                                        + [self.BPR_delay_mask] * self.delay)
+                                      + [self.BPR_delay_mask] * self.delay)
             BPT_mask_array = np.array([self.BPT_integrate_mask] * period
-                                        + [self.BPT_delay_mask] * self.delay)
+                                      + [self.BPT_delay_mask] * self.delay)
             loss_mask_array = np.vstack([BPR_mask_array, BPT_mask_array]).T
             loss_mask.append(loss_mask_array)
 

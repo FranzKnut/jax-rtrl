@@ -1,5 +1,7 @@
 import numpy as np
+
 from gen_data.Task import Task
+
 
 class Sensorimotor_Mapping(Task):
     """Class for a simple working memory task, where a binary input is given
@@ -39,7 +41,7 @@ class Sensorimotor_Mapping(Task):
         self.time_steps_per_trial = t_report + report_duration
         self.off_report_loss_factor = off_report_loss_factor
 
-        #Make mask for preferential learning within task
+        # Make mask for preferential learning within task
         self.trial_mask = np.ones(self.time_steps_per_trial)
         self.trial_mask *= self.off_report_loss_factor
         self.trial_mask[self.t_report:self.t_report + self.report_duration] = 1
@@ -54,17 +56,17 @@ class Sensorimotor_Mapping(Task):
         trial_switch = []
         loss_mask = []
 
-        #Trial type 1
+        # Trial type 1
         x_1 = np.zeros((self.time_steps_per_trial, 2))
-        y_1 = np.ones_like(x_1)*0.5
+        y_1 = np.ones_like(x_1) * 0.5
         x_1[self.t_stim:self.t_stim + self.stim_duration, 0] = 1
         x_1[self.t_report:self.t_report + self.report_duration, 1] = 1
         y_1[self.t_report:self.t_report + self.report_duration, 0] = 1
         y_1[self.t_report:self.t_report + self.report_duration, 1] = 0
 
-        #Trial type 2
+        # Trial type 2
         x_2 = np.zeros((self.time_steps_per_trial, 2))
-        y_2 = np.ones_like(x_2)*0.5
+        y_2 = np.ones_like(x_2) * 0.5
         x_2[self.t_stim:self.t_stim + self.stim_duration, 0] = -1
         x_2[self.t_report:self.t_report + self.report_duration, 1] = 1
         y_2[self.t_report:self.t_report + self.report_duration, 0] = 0
@@ -77,13 +79,11 @@ class Sensorimotor_Mapping(Task):
 
         N_trials = N // self.time_steps_per_trial
         for i in range(N_trials):
-
             trial_type_ = np.random.choice([0, 1])
             trial_type.append(trial_type_)
             X.append(x_trials[trial_type_])
             Y.append(y_trials[trial_type_])
             trial_switch.append(trial_switch_array)
-
 
         if N_trials > 0:
             X = np.concatenate(X, axis=0)

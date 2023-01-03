@@ -1,6 +1,9 @@
-from learning_algorithms.Learning_Algorithm import Learning_Algorithm
-import numpy as np
 from copy import deepcopy
+
+import numpy as np
+
+from learning_algorithms.Learning_Algorithm import Learning_Algorithm
+
 
 class KeRNL(Learning_Algorithm):
     """Implements the Kernel RNN Learning (KeRNL) algorithm from Roth et al.
@@ -57,7 +60,7 @@ class KeRNL(Learning_Algorithm):
         self.optimizer = optimizer
         self.zeta = np.random.normal(0, self.sigma_noise, self.n_h)
 
-        #Initialize learning variables
+        # Initialize learning variables
         if self.A is None:
             self.A = np.eye(self.n_h)
         if self.B is None:
@@ -69,34 +72,34 @@ class KeRNL(Learning_Algorithm):
         if self.Gamma is None:
             self.Gamma = np.zeros(self.n_h)
 
-        #Initialize noisy network as copy of original network
+        # Initialize noisy network as copy of original network
         self.noisy_rnn = deepcopy(self.rnn)
 
     def update_learning_vars(self):
         """Updates the matrices A and B, which are ultimately used to drive
         learning. In the process also updates alpha, Omega, and Gamma."""
 
-        #Reset learning variables if desired and on schedule to do so
+        # Reset learning variables if desired and on schedule to do so
         if self.T_reset is not None:
             if self.i_t % self.T_reset == 0:
                 self.reset_learning()
 
-        #Match noisy network's parameters to latest network parameters
+        # Match noisy network's parameters to latest network parameters
         self.noisy_rnn.W_rec = self.rnn.W_rec
         self.noisy_rnn.W_in = self.rnn.W_in
         self.noisy_rnn.b_rec = self.rnn.b_rec
 
-        #Run perturbed network forwards
+        # Run perturbed network forwards
         self.noisy_rnn.a += self.zeta
         self.noisy_rnn.next_state(self.rnn.x)
 
-        #Update learning variables (see Pseudocode in Roth et al. 2019)
+        # Update learning variables (see Pseudocode in Roth et al. 2019)
         self.kernel = np.maximum(0, 1 - self.alpha)
         self.zeta = np.random.normal(0, self.sigma_noise, self.n_h)
         self.Gamma = self.kernel * self.Gamma - self.Omega
         self.Omega = self.kernel * self.Omega + self.zeta
 
-        #Update eligibility trace (Eq. 1)
+        # Update eligibility trace (Eq. 1)
         self.D = self.rnn.activation.f_prime(self.rnn.h)
         self.a_hat = np.concatenate([self.rnn.a_prev,
                                      self.rnn.x,
@@ -104,17 +107,17 @@ class KeRNL(Learning_Algorithm):
         self.papw = self.rnn.alpha * np.multiply.outer(self.D, self.a_hat)
         self.B = (self.B.T * self.kernel).T + self.papw
 
-        #Get error in predicting perturbations effect (see Pseudocode)
+        # Get error in predicting perturbations effect (see Pseudocode)
         self.error_prediction = self.A.dot(self.Omega)
         self.error_observed = self.noisy_rnn.a - self.rnn.a
         self.noise_loss = np.square(self.error_prediction -
                                     self.error_observed).sum()
         self.noise_error = self.error_prediction - self.error_observed
 
-        #Update A and alpha (see Pseudocode)
+        # Update A and alpha (see Pseudocode)
         self.A_grads = np.multiply.outer(self.noise_error, self.Omega)
         self.alpha_grads = self.noise_error.dot(self.A) * self.Gamma
-        params = [self.A, self. alpha]
+        params = [self.A, self.alpha]
         grads = [self.A_grads, self.alpha_grads]
         self.A, self.alpha = self.optimizer.get_updated_params(params, grads)
 

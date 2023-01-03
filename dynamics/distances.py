@@ -1,12 +1,16 @@
-from dynamics.dynamics_utils import get_test_sim_data, align_checkpoints_based_on_output
-from dynamics.Dynamics import Vanilla_PCA
 from itertools import permutations
+
 import numpy as np
 from netcomp.distance import netsimile
 from pyemd import emd
 from sklearn.cross_decomposition import CCA
+
+from dynamics.Dynamics import Vanilla_PCA
+from dynamics.dynamics_utils import get_test_sim_data, align_checkpoints_based_on_output
 from utils import norm, normalized_dot_product
-#from dynamics.VAE import test_vae
+
+
+# from dynamics.VAE import test_vae
 
 def wasserstein_distance(checkpoint_1, checkpoint_2):
     """Calculates the Wassterstein ("Earth Mover's") distance between the
@@ -44,6 +48,7 @@ def wasserstein_distance(checkpoint_1, checkpoint_2):
 
     return emd(hist1, hist2, distances)
 
+
 # def SVCCA_distance(checkpoint_1, checkpoint_2, data, R=3):
 #     """Compute the singular-value canonical correlation analysis distance
 #     between two different networks."""
@@ -70,17 +75,18 @@ def SVCCA_distance(checkpoint_1, checkpoint_2, R=32):
     A_1 = checkpoint_1['test_data']
     A_2 = checkpoint_2['test_data']
 
-    #U_1, S_1, V_1 = np.linalg.svd(A_1)
-    #U_2, S_2, V_2 = np.linalg.svd(A_2)
+    # U_1, S_1, V_1 = np.linalg.svd(A_1)
+    # U_2, S_2, V_2 = np.linalg.svd(A_2)
 
     cca = CCA(n_components=R, max_iter=1000)
-    #cca.fit(V_1, V_2)
-    #cca.fit(A_1.dot(V_1), A_2.dot(V_2))
+    # cca.fit(V_1, V_2)
+    # cca.fit(A_1.dot(V_1), A_2.dot(V_2))
     cca.fit(A_1, A_2)
 
-    #return 1 - cca.score(A_1.dot(V_1), A_2.dot(V_2))
-    #return 1 - cca.score(V_1, V_2)
+    # return 1 - cca.score(A_1.dot(V_1), A_2.dot(V_2))
+    # return 1 - cca.score(V_1, V_2)
     return 1 - cca.score(A_1, A_2)
+
 
 def CKA_distance(checkpoint_1, checkpoint_2, data=None, centered=True):
     """Compute CKA distance between two checkpoints"""
@@ -98,8 +104,7 @@ def CKA_distance(checkpoint_1, checkpoint_2, data=None, centered=True):
         A_1 = A_1 - np.mean(A_1, axis=0)
         A_2 = A_2 - np.mean(A_2, axis=0)
 
-
-    return 1 - (norm(A_1.T.dot(A_2))**2 / (norm(A_1.T.dot(A_1)) * norm(A_2.T.dot(A_2))))
+    return 1 - (norm(A_1.T.dot(A_2)) ** 2 / (norm(A_1.T.dot(A_1)) * norm(A_2.T.dot(A_2))))
 
 
 def rec_weight_distance(checkpoint_1, checkpoint_2):
@@ -114,6 +119,7 @@ def rec_weight_distance(checkpoint_1, checkpoint_2):
 
     return norm(W_rec_1 - W_rec_2)
 
+
 def output_weight_distance(checkpoint_1, checkpoint_2):
     """Computes the norm of the difference in the output weight matrix
     between two checkpoints."""
@@ -126,12 +132,14 @@ def output_weight_distance(checkpoint_1, checkpoint_2):
 
     return norm(W_out_1 - W_out_2)
 
+
 def graph_distance(checkpoint_1, checkpoint_2):
     """Calculates the netsimile distance between the adjacency matrix for
     the fixed-point transition graphs."""
 
     return netsimile(checkpoint_1['adjacency_matrix'],
                      checkpoint_2['adjacency_matrix'])
+
 
 def input_dependent_graph_distance(checkpoint_1, checkpoint_2):
     """Calculates the average netsimile distance between the adjacency
@@ -162,6 +170,7 @@ def PC_distance_1(checkpoint_1, checkpoint_2):
 
     return 1 - np.abs(np.sum(V1 * V2) / n_dim)
 
+
 def PC_distance_2(checkpoint_1, checkpoint_2):
     """Returns the angular alignment between the first n_dim PC
     axes as calculated during analysis pipeline, computed using determinants.
@@ -174,6 +183,7 @@ def PC_distance_2(checkpoint_1, checkpoint_2):
     M = V1.T.dot(V2)
 
     return np.arccos(np.sqrt(np.linalg.det(M.dot(M.T))))
+
 
 def PC_distance_3(checkpoint_1, checkpoint_2, N_avg=None, N_test=2000,
                   task=None):
@@ -194,7 +204,6 @@ def PC_distance_3(checkpoint_1, checkpoint_2, N_avg=None, N_test=2000,
         n_1 = checkpoint_1['rnn'].n_h
         n_2 = checkpoint_2['rnn'].n_h
 
-
         Ds = []
         for i in range(N_avg):
             np.random.seed(i)
@@ -207,7 +216,6 @@ def PC_distance_3(checkpoint_1, checkpoint_2, N_avg=None, N_test=2000,
             Ds.append(1 - avg)
 
         return np.mean(Ds)
-
 
 
 # def VAE_distance(checkpoint_1, checkpoint_2, big_data):
@@ -241,7 +249,6 @@ def aligned_graph_distance(checkpoint_1, checkpoint_2, node_diff_penalty=1,
         if n_1 < n_2:
             base_key_1 = 'forwardembed_adjmat_input'
             base_key_2 = 'adjmat_input'
-
 
         adjmats_1 = [checkpoint_1[base_key_1 + '_{}'.format(i)] for i in range(n_inputs)]
         adjmats_2 = [checkpoint_2[base_key_2 + '_{}'.format(i)] for i in range(n_inputs)]
@@ -304,6 +311,7 @@ def node_diff_distance(checkpoint_1, checkpoint_2):
     n_2 = checkpoint_2['nodes'].shape[0]
 
     return np.abs(n_1 - n_2) / max(n_1, n_2)
+
 
 def weight_change_alignment_distance(checkpoint_1, checkpoint_2):
     """Returns the angular alignment between weight updates relative to each

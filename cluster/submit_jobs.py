@@ -1,6 +1,8 @@
 import os
-import numpy as np
 import pickle
+
+import numpy as np
+
 
 def submit_job(job_file_path, n_array,
                py_file_name=None,
@@ -20,7 +22,7 @@ def submit_job(job_file_path, n_array,
     code_dir = os.path.join(results_dir, 'code')
     main_dir = os.path.join(project_dir, 'cluster_main_scripts')
     if py_file_name is None:
-        py_file_name = job_name+'.py'
+        py_file_name = job_name + '.py'
     main_path = os.path.join(main_dir, py_file_name)
     job_path = os.path.join(project_dir, 'job_scripts', job_name + '.s')
 
@@ -54,6 +56,7 @@ def submit_job(job_file_path, n_array,
 
     return job_id
 
+
 def write_job_file(job_name, py_file_name='main.py',
                    py_args='',
                    project_name='learning-dynamics',
@@ -86,9 +89,9 @@ def write_job_file(job_name, py_file_name='main.py',
     ### --- Define key commands and singularity environments --- ###
 
     command = ('pwd > {}.log; '.format(log_path)
-              + 'date >> {}.log; '.format(log_path)
-              + 'which python >> {}.log; '.format(log_path)
-              + 'python {} {}\n'.format(py_file_name, py_args))
+               + 'date >> {}.log; '.format(log_path)
+               + 'which python >> {}.log; '.format(log_path)
+               + 'python {} {}\n'.format(py_file_name, py_args))
 
     overlay = '/home/{}/pytorch1.7.0-cuda11.0.ext3:ro'.format(username)
     singularity_dir = '/scratch/work/public/singularity/'
@@ -113,13 +116,14 @@ def write_job_file(job_name, py_file_name='main.py',
             + 'module purge\n'
             + 'SAVEDIR={}\n'.format(save_dir)
             + 'export SAVEDIR\n'
-            #+ 'export OMP_NUM_THREADS=1\n'
+            # + 'export OMP_NUM_THREADS=1\n'
             + 'cd {}\n'.format(main_dir)
             + '{} exec '.format(singularity_exe_path)
             + '--overlay {} {} '.format(overlay, singularity_path)
             + 'bash -c "source /ext3/env.sh; {}"'.format(command))
 
     return job_path
+
 
 # def write_dependent_job_script(job_name, job_name_1, job_name_2,
 #                                project_name='learning-dynamics',
@@ -161,7 +165,6 @@ def unpack_processed_data(job_file_path,
             result = pickle.load(f)
 
         if i_file == 0:
-
             configs_array = {key: [] for key in result['config'].keys()}
             key_order = [key for key in result['config'].keys()]
 
@@ -177,7 +180,6 @@ def unpack_processed_data(job_file_path,
     ### --- Sort individual config dimensions --- ####
 
     for key in configs_array.keys():
-
         configs_array[key] = sorted(configs_array[key])
 
     ### --- Determine shape of processed data --- ###

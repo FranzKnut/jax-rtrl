@@ -1,6 +1,8 @@
-from learning_algorithms.Stochastic_Algorithm import Stochastic_Algorithm
 import numpy as np
+
+from learning_algorithms.Stochastic_Algorithm import Stochastic_Algorithm
 from utils import norm
+
 
 class KF_RTRL(Stochastic_Algorithm):
     """Implements the Kronecker-Factored Real-Time Recurrent Learning Algorithm
@@ -46,7 +48,7 @@ class KF_RTRL(Stochastic_Algorithm):
         super().__init__(rnn, allowed_kwargs_, **kwargs)
         self.n_nu = 2
 
-        #Initialize A and B arrays
+        # Initialize A and B arrays
         if self.A is None:
             self.A = np.random.normal(0, 1, self.m)
         if self.B is None:
@@ -61,7 +63,7 @@ class KF_RTRL(Stochastic_Algorithm):
                 product approximation B, A. If False, only prepares for calling
                 get_influence_estimate."""
 
-        #Get relevant values and derivatives from network
+        # Get relevant values and derivatives from network
         self.a_hat = np.concatenate([self.rnn.a_prev,
                                      self.rnn.x,
                                      np.array([1])])
@@ -86,23 +88,23 @@ class KF_RTRL(Stochastic_Algorithm):
             Updated A (numpy array of shape (m)) and B (numpy array of shape
                 (n_h, n_h))."""
 
-        #Sample random vector (shape (2) in KF-RTRL)
+        # Sample random vector (shape (2) in KF-RTRL)
         self.nu = self.sample_nu()
 
-        #Calculate p0, p1 or override with fixed P0, P1 if given
+        # Calculate p0, p1 or override with fixed P0, P1 if given
         if self.P0 is None:
-            self.p0 = np.sqrt(norm(self.B_forwards)/norm(self.A))
+            self.p0 = np.sqrt(norm(self.B_forwards) / norm(self.A))
         else:
             self.p0 = np.copy(self.P0)
         if self.P1 is None:
-            self.p1 = np.sqrt(norm(self.D)/norm(self.a_hat))
+            self.p1 = np.sqrt(norm(self.D) / norm(self.a_hat))
         else:
             self.p1 = np.copy(self.P1)
 
-        #Update Kronecker product approximation
-        A = self.nu[0]*self.p0*self.A + self.nu[1]*self.p1*self.a_hat
-        B = (self.nu[0]*(1/self.p0)*self.B_forwards +
-             self.nu[1]*(1/self.p1)*self.D)
+        # Update Kronecker product approximation
+        A = self.nu[0] * self.p0 * self.A + self.nu[1] * self.p1 * self.a_hat
+        B = (self.nu[0] * (1 / self.p0) * self.B_forwards +
+             self.nu[1] * (1 / self.p1) * self.D)
 
         return A, B
 
@@ -117,7 +119,7 @@ class KF_RTRL(Stochastic_Algorithm):
         Returns:
             An array of shape (n_h, m) representing the recurrent gradient."""
 
-        self.qB = self.q.dot(self.B) #Unit-specific learning signal
+        self.qB = self.q.dot(self.B)  # Unit-specific learning signal
         return np.kron(self.A, self.qB).reshape((self.n_h, self.m), order='F')
 
     def reset_learning(self):

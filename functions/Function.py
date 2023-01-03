@@ -14,15 +14,3 @@ class Function:
 
         self.f = f
         self.f_prime = f_prime
-
-
-
-
-
-
-
-
-
-
-
-

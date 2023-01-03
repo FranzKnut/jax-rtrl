@@ -1,5 +1,7 @@
-from learning_algorithms.Learning_Algorithm import Learning_Algorithm
 import numpy as np
+
+from learning_algorithms.Learning_Algorithm import Learning_Algorithm
+
 
 class Future_BPTT(Learning_Algorithm):
     """Implements the 'F-BPTT' version of backprop we discuss in the paper for
@@ -37,20 +39,19 @@ class Future_BPTT(Learning_Algorithm):
         a_hat, h and q. Then backpropagates the latest q to each previous time
         step, adding the result to each previous credit assignment estimate."""
 
-        #Update history
+        # Update history
         self.a_hat_history.insert(0, np.concatenate([self.rnn.a_prev,
                                                      self.rnn.x,
                                                      np.array([1])]))
         self.h_history.insert(0, self.rnn.h)
         self.propagate_feedback_to_hidden()
         q = np.copy(self.q)
-        #Add immediate credit assignment to front of list
+        # Add immediate credit assignment to front of list
         self.c_history.insert(0, q)
 
-        #Loop over truncation horizon and backpropagate q, pausing along way to
-        #update credit assignment estimates
+        # Loop over truncation horizon and backpropagate q, pausing along way to
+        # update credit assignment estimates
         for i_BPTT in range(1, len(self.c_history)):
-
             h = self.h_history[i_BPTT - 1]
             J = self.rnn.get_a_jacobian(h=h, update=False)
             q = q.dot(J)
@@ -66,12 +67,12 @@ class Future_BPTT(Learning_Algorithm):
 
         if len(self.c_history) >= self.T_truncation:
 
-            #Remove oldest c, h and a_hat from lists
+            # Remove oldest c, h and a_hat from lists
             c = self.c_history.pop(-1)
             h = self.h_history.pop(-1)
             a_hat = self.a_hat_history.pop(-1)
 
-            #Implement Eq. (1)
+            # Implement Eq. (1)
             D = self.rnn.alpha * self.rnn.activation.f_prime(h)
             rec_grads = np.multiply.outer(c * D, a_hat)
 

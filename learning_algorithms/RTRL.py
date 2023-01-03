@@ -1,5 +1,7 @@
-from learning_algorithms.Learning_Algorithm import Learning_Algorithm
 import numpy as np
+
+from learning_algorithms.Learning_Algorithm import Learning_Algorithm
+
 
 class RTRL(Learning_Algorithm):
     """Implements the Real-Time Recurrent Learning (RTRL) algorithm from
@@ -33,26 +35,26 @@ class RTRL(Learning_Algorithm):
     def __init__(self, rnn, M_decay=1, **kwargs):
         """Inits an RTRL instance by setting the initial dadw matrix to zero."""
 
-        self.name = 'RTRL' #Algorithm name
-        allowed_kwargs_ = set() #No special kwargs for RTRL
+        self.name = 'RTRL'  # Algorithm name
+        allowed_kwargs_ = set()  # No special kwargs for RTRL
         super().__init__(rnn, allowed_kwargs_, **kwargs)
 
-        #Initialize influence matrix
+        # Initialize influence matrix
         self.dadw = np.zeros((self.n_h, self.rnn.n_h_params))
         self.M_decay = M_decay
 
     def update_learning_vars(self):
         """Updates the influence matrix via Eq. (1)."""
 
-        #Get relevant values and derivatives from network.
+        # Get relevant values and derivatives from network.
         self.a_hat = np.concatenate([self.rnn.a_prev,
                                      self.rnn.x,
                                      np.array([1])])
         D = self.rnn.alpha * np.diag(self.rnn.activation.f_prime(self.rnn.h))
-        self.papw = np.kron(self.a_hat, D) #Calculate M_immediate
-        self.rnn.get_a_jacobian() #Get updated network Jacobian
+        self.papw = np.kron(self.a_hat, D)  # Calculate M_immediate
+        self.rnn.get_a_jacobian()  # Get updated network Jacobian
 
-        #Update influence matrix via Eq. (1).
+        # Update influence matrix via Eq. (1).
         self.dadw = self.M_decay * self.rnn.a_J.dot(self.dadw) + self.papw
 
     def get_rec_grads(self):

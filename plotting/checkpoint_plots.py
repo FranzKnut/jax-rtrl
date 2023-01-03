@@ -1,10 +1,11 @@
-import sys, os
+import os
+import sys
+
 sys.path.append(os.path.abspath('..'))
-import numpy as np
 import matplotlib.pyplot as plt
-from core import Simulation
 from dynamics import *
 from plotting.State_Space_Analysis import State_Space_Analysis
+
 
 def plot_output_from_checkpoint(checkpoint, data, plot_title=None,
                                 figsize=(3, 2), xlim=500,
@@ -26,7 +27,6 @@ def plot_output_from_checkpoint(checkpoint, data, plot_title=None,
 
     fig = plt.figure(figsize=figsize)
     for i in range(rnn.n_out):
-
         plt.plot(data['test']['X'][:, i] - i * y_spacing, (str(0.6)))
         plt.plot(data['test']['Y'][:, i] - i * y_spacing, 'C0')
         plt.plot(test_sim.mons['rnn.y_hat'][:, i] - i * y_spacing, 'C3')
@@ -40,6 +40,7 @@ def plot_output_from_checkpoint(checkpoint, data, plot_title=None,
         plt.title(plot_title)
 
     return fig
+
 
 def plot_input_dependent_topology(checkpoint, data,
                                   reference_checkpoint=None,
@@ -55,7 +56,6 @@ def plot_input_dependent_topology(checkpoint, data,
                                   plot_output=True,
                                   output_ylim=[-9, 3],
                                   figsize=(8, 4)):
-
     if n_inputs is None:
         n_in = 6
     else:
@@ -81,7 +81,7 @@ def plot_input_dependent_topology(checkpoint, data,
     t_range = np.arange(np.pi, -np.pi, -2 * np.pi / total_nodes)
     circle_nodes = np.array([[np.cos(t), np.sin(t)] for t in t_range[:n_nodes]])
 
-    #plot little circles
+    # plot little circles
     # theta = np.arange(0, 2 * np.pi, 0.01)
     # for i_cn, node in enumerate(circle_nodes):
     #     plt.plot(node[0] + circle_radius * np.cos(theta),
@@ -94,7 +94,7 @@ def plot_input_dependent_topology(checkpoint, data,
         circ = plt.Circle(node, radius=circle_radius, color=circle_color)
         ax[0].add_artist(circ)
 
-    #Create multigraph tensor
+    # Create multigraph tensor
     graph = np.stack([checkpoint[key] for key in keys], axis=-1)
     leg = []
     colors = []
@@ -156,7 +156,7 @@ def plot_input_dependent_topology(checkpoint, data,
                     linestyle = linestyles[i_input]
 
                     ax[0].plot([start[0], end[0]],
-                            [start[1], end[1]], color=col, linestyle=linestyle)
+                               [start[1], end[1]], color=col, linestyle=linestyle)
 
                     ax[0].plot([start[0]], [start[1]], 'x', color=col)
 
@@ -167,7 +167,7 @@ def plot_input_dependent_topology(checkpoint, data,
     ax[0].axis('off')
 
     if plot_output:
-        #Add output plots
+        # Add output plots
         rnn = checkpoint['rnn']
         test_sim = Simulation(rnn)
         test_sim.run(data, mode='test', monitors=['rnn.y_hat'], verbose=False)
@@ -184,10 +184,10 @@ def plot_input_dependent_topology(checkpoint, data,
     if return_fig:
         return fig
 
+
 def plot_input_dependent_task_topology(task, reference_checkpoint=None,
                                        i_input=None, plotting_noise=0.05,
                                        return_fig=False, color_scheme='dotted'):
-
     n_nodes = task.n_states
     total_nodes = n_nodes
 
@@ -197,7 +197,7 @@ def plot_input_dependent_task_topology(task, reference_checkpoint=None,
     t_range = np.arange(np.pi, -np.pi, -2 * np.pi / total_nodes)
     circle_nodes = np.array([[np.cos(t), np.sin(t)] for t in t_range[:n_nodes]])
 
-    #plot little circles
+    # plot little circles
     theta = np.arange(0, 2 * np.pi, 0.01)
     for node in circle_nodes:
         plt.plot(node[0] + 0.18 * np.cos(theta), node[1] + 0.18 * np.sin(theta),
@@ -248,17 +248,17 @@ def plot_input_dependent_task_topology(task, reference_checkpoint=None,
             end = circle_nodes[j] + np.random.normal(0, plotting_noise, 2)
 
             plt.plot([start[0], end[0]],
-                      [start[1], end[1]],
-                      color='C{}'.format(i_color), alpha=weight,
-                      linestyle=linestyle)
+                     [start[1], end[1]],
+                     color='C{}'.format(i_color), alpha=weight,
+                     linestyle=linestyle)
 
             plt.plot([start[0]],
-                      [start[1]], 'x',
-                      color='C{}'.format(i_color), alpha=weight)
+                     [start[1]], 'x',
+                     color='C{}'.format(i_color), alpha=weight)
 
             plt.plot([end[0]],
-                      [end[1]], '.',
-                      color='C{}'.format(i_color), alpha=weight)
+                     [end[1]], '.',
+                     color='C{}'.format(i_color), alpha=weight)
 
             # plt.arrow(start[0], start[1], end[0] - start[0], end[1] - start[1],
             #           color='C{}'.format(i_color), alpha=weight,
@@ -267,16 +267,15 @@ def plot_input_dependent_task_topology(task, reference_checkpoint=None,
 
     plt.xlim([-1.4, 1.4])
     plt.ylim([-1.4, 1.4])
-    #plt.legend(leg)
-    #plt.axis('equal')
-    #set_trace()
+    # plt.legend(leg)
+    # plt.axis('equal')
+    # set_trace()
 
     if return_fig:
         return fig
 
+
 def plot_projection_of_rec_weights(checkpoint_lists, return_fig=False):
-
-
     n_params = checkpoint_lists[0][0]['rnn'].n_h_params
 
     fig = plt.figure()
@@ -292,18 +291,16 @@ def plot_projection_of_rec_weights(checkpoint_lists, return_fig=False):
             rec_params.append(params)
         rec_params = np.array(rec_params)
 
-
-
         proj = rec_params.dot(U.T)
 
-
         col = 'C{}'.format(i_list)
-        plt.plot(proj[:,0], proj[:,1], color=col)
-        plt.plot([proj[0,0]], [proj[0,1]], 'x', color=col)
-        plt.plot([proj[-1,0]], [proj[-1,1]], '.', color=col)
+        plt.plot(proj[:, 0], proj[:, 1], color=col)
+        plt.plot([proj[0, 0]], [proj[0, 1]], 'x', color=col)
+        plt.plot([proj[-1, 0]], [proj[-1, 1]], '.', color=col)
 
     if return_fig:
         return fig
+
 
 def plot_checkpoint_results(checkpoint, data, ssa=None, plot_test_points=False,
                             plot_fixed_points=False, plot_cluster_means=False,
@@ -350,7 +347,7 @@ def plot_checkpoint_results(checkpoint, data, ssa=None, plot_test_points=False,
             n2 = i_ax % n
             T = T_per_sample
             T_total = test_sim.mons['rnn.a'].shape[0]
-            t_start = np.random.randint(0, (T_total - T)//T) * T
+            t_start = np.random.randint(0, (T_total - T) // T) * T
             ssa.plot_in_state_space(test_sim.mons['rnn.a'][t_start:t_start + T],
                                     True, 'C0', alpha=0.7)
             for i_out in range(test_sim.rnn.n_out):

@@ -1,8 +1,11 @@
-import sys, os
+import os
+import sys
+
 sys.path.append(os.path.abspath('..'))
 import unittest
 from optimizers import *
 import numpy as np
+
 
 class Test_SGD(unittest.TestCase):
 
@@ -13,11 +16,11 @@ class Test_SGD(unittest.TestCase):
 
     def test_clip_norm(self):
 
-        grads = [np.ones(2)*2, np.ones(2)]
+        grads = [np.ones(2) * 2, np.ones(2)]
         clipped_grads = self.optimizer.clip_gradient((grads))
         grad_norm = np.sqrt(10)
-        correct_clipped_grads = [np.ones(2)*4/grad_norm,
-                                 np.ones(2)*2/grad_norm]
+        correct_clipped_grads = [np.ones(2) * 4 / grad_norm,
+                                 np.ones(2) * 2 / grad_norm]
 
         self.assertTrue(np.isclose(clipped_grads,
                                    correct_clipped_grads).all())
@@ -27,7 +30,7 @@ class Test_SGD(unittest.TestCase):
         params = [np.ones(2)]
         grads = [np.ones(2)]
         updated_params = self.optimizer.get_updated_params(params, grads)
-        correct_updated_params = [np.ones(2)*0.9]
+        correct_updated_params = [np.ones(2) * 0.9]
 
         self.assertTrue(np.isclose(updated_params,
                                    correct_updated_params).all())
@@ -42,7 +45,7 @@ class Test_SGD(unittest.TestCase):
         for _ in range(3):
             params = optimizer.get_updated_params(params, grads)
 
-        correct_lr = 0.9**3
+        correct_lr = 0.9 ** 3
         self.assertEqual(correct_lr, optimizer.lr)
 
         for _ in range(4):
@@ -50,6 +53,7 @@ class Test_SGD(unittest.TestCase):
 
         correct_lr = 0.5
         self.assertEqual(correct_lr, optimizer.lr)
+
 
 if __name__ == '__main__':
     unittest.main()

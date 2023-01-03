@@ -1,6 +1,8 @@
-from learning_algorithms.Stochastic_Algorithm import Stochastic_Algorithm
 import numpy as np
+
+from learning_algorithms.Stochastic_Algorithm import Stochastic_Algorithm
 from utils import norm
+
 
 class Reverse_KF_RTRL(Stochastic_Algorithm):
     """Implements the "Reverse" KF-RTRL (R-KF-RTRL) algorithm.
@@ -47,7 +49,7 @@ class Reverse_KF_RTRL(Stochastic_Algorithm):
         super().__init__(rnn, allowed_kwargs_, **kwargs)
         self.n_nu = self.n_h
 
-        #Initialize A and B arrays
+        # Initialize A and B arrays
         if self.A is None:
             self.A = np.random.normal(0, 1, self.n_h)
         if self.B is None:
@@ -62,14 +64,14 @@ class Reverse_KF_RTRL(Stochastic_Algorithm):
                 product approximation B, A. If False, only prepares for calling
                 get_influence_estimate."""
 
-        #Get relevant values and derivatives from network
+        # Get relevant values and derivatives from network
         self.a_hat = np.concatenate([self.rnn.a_prev,
                                      self.rnn.x,
                                      np.array([1])])
         self.D = self.rnn.alpha * self.rnn.activation.f_prime(self.rnn.h)
-        #Compact form of M_immediate
+        # Compact form of M_immediate
         self.papw = np.multiply.outer(self.D, self.a_hat)
-        self.rnn.get_a_jacobian() #Get updated network Jacobian
+        self.rnn.get_a_jacobian()  # Get updated network Jacobian
         self.B_forwards = self.rnn.a_J.dot(self.B)
 
         A, B = self.get_influence_estimate()
@@ -88,28 +90,28 @@ class Reverse_KF_RTRL(Stochastic_Algorithm):
             Updated A (numpy array of shape (n_h)) and B (numpy array of shape
                 (n_h, n_m))."""
 
-        #Sample random vector
+        # Sample random vector
         self.nu = self.sample_nu()
 
         # Get random projection of M_immediate onto \nu
         M_projection = (self.papw.T * self.nu).T
 
-        #Calculate scaling factors
+        # Calculate scaling factors
         B_norm = norm(self.B_forwards)
         A_norm = norm(self.A)
         M_norm = norm(M_projection)
-        self.p0 = np.sqrt(B_norm/A_norm)
-        self.p1 = np.sqrt(M_norm/np.sqrt(self.n_h))
+        self.p0 = np.sqrt(B_norm / A_norm)
+        self.p1 = np.sqrt(M_norm / np.sqrt(self.n_h))
 
-        #Override with fixed P0 and P1 if given
+        # Override with fixed P0 and P1 if given
         if self.P0 is not None:
             self.p0 = np.copy(self.P0)
         if self.P1 is not None:
             self.p1 = np.copy(self.P1)
 
-        #Update "inverse" Kronecker product approximation
+        # Update "inverse" Kronecker product approximation
         A = self.p0 * self.A + self.p1 * self.nu
-        B = (1/self.p0) * self.B_forwards + (1/self.p1) * M_projection
+        B = (1 / self.p0) * self.B_forwards + (1 / self.p1) * M_projection
 
         return A, B
 
@@ -123,7 +125,7 @@ class Reverse_KF_RTRL(Stochastic_Algorithm):
         Returns:
             An array of shape (n_h, m) representing the recurrent gradient."""
 
-        self.qB = self.q.dot(self.B) #Unit-specific learning signal
+        self.qB = self.q.dot(self.B)  # Unit-specific learning signal
         return np.multiply.outer(self.A, self.qB)
 
     def reset_learning(self):

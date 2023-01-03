@@ -1,5 +1,7 @@
-from optimizers.Optimizer import Optimizer
 import numpy as np
+
+from optimizers.Optimizer import Optimizer
+
 
 class SGD_Momentum(Optimizer):
     """Impelements SGD with classical momentum."""
@@ -42,4 +44,3 @@ class SGD_Momentum(Optimizer):
             updated_params.append(param + v)
 
         return updated_params
-

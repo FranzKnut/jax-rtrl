@@ -1,6 +1,8 @@
-from learning_algorithms.Learning_Algorithm import Learning_Algorithm
-from functions import *
 import numpy as np
+
+from functions import *
+from learning_algorithms.Learning_Algorithm import Learning_Algorithm
+
 
 class DNI(Learning_Algorithm):
     """Implements the Decoupled Neural Interface (DNI) algorithm for an RNN from
@@ -68,58 +70,58 @@ class DNI(Learning_Algorithm):
         self.name = 'DNI'
         allowed_kwargs_ = {'A', 'J_lr', 'activation', 'SG_label_activation',
                            'use_approx_J', 'SG_L2_reg', 'fix_A_interval'}
-        #Default parameters
+        # Default parameters
         self.optimizer = optimizer
         self.SG_L2_reg = 0
         self.fix_A_interval = 5
         self.activation = identity
         self.SG_label_activation = identity
         self.use_approx_J = False
-        #Override defaults with kwargs
+        # Override defaults with kwargs
         super().__init__(rnn, allowed_kwargs_, **kwargs)
 
         self.m_out = self.n_h + self.n_out + 1
         self.J_approx = np.copy(self.rnn.W_rec)
         self.i_fix = 0
         if self.A is None:
-            self.A = np.random.normal(0, np.sqrt(1/self.m_out),
+            self.A = np.random.normal(0, np.sqrt(1 / self.m_out),
                                       (self.n_h, self.m_out))
         self.A_ = np.copy(self.A)
 
     def update_learning_vars(self):
         """Updates the A matrix by Eqs. (3) and (4)."""
 
-        if self.use_approx_J: #If using approximate Jacobian, update it.
+        if self.use_approx_J:  # If using approximate Jacobian, update it.
             self.update_J_approx()
-        else: #Otherwise get the exact Jacobian.
+        else:  # Otherwise get the exact Jacobian.
             self.rnn.get_a_jacobian()
 
-        #Compute synthetic gradient estimate of credit assignment at previous
-        #time step. This is NOT used to drive learning in W but rather to drive
-        #learning in A.
+        # Compute synthetic gradient estimate of credit assignment at previous
+        # time step. This is NOT used to drive learning in W but rather to drive
+        # learning in A.
         self.a_tilde_prev = np.concatenate([self.rnn.a_prev,
                                             self.rnn.y_prev,
                                             np.array([1])])
         self.sg = self.synthetic_grad(self.a_tilde_prev)
 
-        #Compute the target, error and loss for the synthetic gradient function
+        # Compute the target, error and loss for the synthetic gradient function
         self.sg_target = self.get_sg_target()
         self.A_error = self.sg - self.sg_target
         self.A_loss = 0.5 * np.square(self.A_error).mean()
 
-        #Compute gradients for A
+        # Compute gradients for A
         self.scaled_A_error = self.A_error * self.activation.f_prime(self.sg_h)
         self.A_grad = np.multiply.outer(self.scaled_A_error, self.a_tilde_prev)
 
-        #Apply L2 regularization to A
+        # Apply L2 regularization to A
         if self.SG_L2_reg > 0:
             self.A_grad += self.SG_L2_reg * self.A
 
-        #Update synthetic gradient parameters
+        # Update synthetic gradient parameters
         self.A = self.optimizer.get_updated_params([self.A], [self.A_grad])[0]
 
-        #On interval determined by self.fix_A_interval, update A_, the values
-        #used to calculate the target in Eq. (3), with the latest value of A.
+        # On interval determined by self.fix_A_interval, update A_, the values
+        # used to calculate the target in Eq. (3), with the latest value of A.
         if self.i_fix == self.fix_A_interval - 1:
             self.i_fix = 0
             self.A_ = np.copy(self.A)
@@ -135,20 +137,20 @@ class DNI(Learning_Algorithm):
             sg_target (numpy array): Array of shape (n_out) used to get error
                 signals for A in update_learning_vars."""
 
-        #Get latest q value, slide current q value to q_prev.
+        # Get latest q value, slide current q value to q_prev.
         self.propagate_feedback_to_hidden()
 
         self.a_tilde = np.concatenate([self.rnn.a,
                                        self.rnn.y,
                                        np.array([1])])
 
-        #Calculate the synthetic gradient for the 'next' (really the current,
-        #but next relative to the previous) time step.
+        # Calculate the synthetic gradient for the 'next' (really the current,
+        # but next relative to the previous) time step.
         sg_next = self.synthetic_grad_(self.a_tilde)
-        #Backpropagate by one time step and add to q_prev to get sg_target.
-        if self.use_approx_J: #Approximate Jacobian
+        # Backpropagate by one time step and add to q_prev to get sg_target.
+        if self.use_approx_J:  # Approximate Jacobian
             sg_target = self.q_prev + sg_next.dot(self.J_approx)
-        else: #Exact Jacobian
+        else:  # Exact Jacobian
             sg_target = self.q_prev + sg_next.dot(self.rnn.a_J)
 
         return sg_target
@@ -199,14 +201,14 @@ class DNI(Learning_Algorithm):
             An array of shape (n_h, m) representing the network gradient for
                 the recurrent parameters."""
 
-        #Calculate synthetic gradient
+        # Calculate synthetic gradient
         self.sg = self.synthetic_grad(self.a_tilde)
-        #Combine the first 3 factors of the RHS of Eq. (2) into sg_scaled
+        # Combine the first 3 factors of the RHS of Eq. (2) into sg_scaled
         D = self.rnn.activation.f_prime(self.rnn.h)
         self.sg_scaled = self.sg * self.rnn.alpha * D
 
         self.a_hat = np.concatenate([self.rnn.a_prev,
                                      self.rnn.x,
                                      np.array([1])])
-        #Final result of Eq. (2)
+        # Final result of Eq. (2)
         return np.multiply.outer(self.sg_scaled, self.a_hat)

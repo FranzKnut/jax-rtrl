@@ -1,5 +1,8 @@
-import sys, os
+import os
+import sys
+
 sys.path.append(os.path.abspath('..'))
+
 
 class Continual_Learning:
     """Shell class for continual learning method, simply demonstrates the
@@ -29,4 +32,3 @@ class Continual_Learning:
         on the CL method."""
 
         return grads_list
-

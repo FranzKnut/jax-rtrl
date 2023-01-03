@@ -1,8 +1,9 @@
-from optimizers.Optimizer import Optimizer
 import numpy as np
 
-class Adam(Optimizer):
+from optimizers.Optimizer import Optimizer
 
+
+class Adam(Optimizer):
     """Adam optimizer.
     Default parameters follow those provided in the original paper.
     # Arguments
@@ -74,4 +75,3 @@ class Adam(Optimizer):
             ret[i] = ret[i].reshape(original_shapes[i])
 
         return ret
-

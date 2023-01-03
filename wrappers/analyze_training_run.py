@@ -1,7 +1,8 @@
-import os
 import pickle
-from dynamics import *
 from math import ceil
+
+from dynamics import *
+
 
 def analyze_training_run(saved_run_name, FP_args, test_args, graph_args,
                          n_checkpoints_per_job_=None,
@@ -71,7 +72,7 @@ def analyze_training_run(saved_run_name, FP_args, test_args, graph_args,
                                parallelize=True, **analysis_args)
 
             get_graph_structure(checkpoint, parallelize=True,
-                                background_input=0,  **graph_args)
+                                background_input=0, **graph_args)
             get_input_dependent_graph_structure(checkpoint,
                                                 inputs=task.probe_inputs,
                                                 **graph_args)

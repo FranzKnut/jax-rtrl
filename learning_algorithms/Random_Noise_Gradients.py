@@ -1,5 +1,7 @@
-from learning_algorithms.Learning_Algorithm import Learning_Algorithm
 import numpy as np
+
+from learning_algorithms.Learning_Algorithm import Learning_Algorithm
+
 
 class Random_Noise_Gradients(Learning_Algorithm):
 
@@ -28,4 +30,3 @@ class Random_Noise_Gradients(Learning_Algorithm):
         shape = (self.rnn.n_h, self.rnn.n_h + self.rnn.n_in + 1)
 
         return np.random.normal(self.bias, self.sigma, shape)
-

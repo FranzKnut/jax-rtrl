@@ -1,10 +1,12 @@
 import numpy as np
+
 from gen_data.Task import Task
+
 
 class Cts_Integration_Task(Task):
     """Class for the 1-dimensional continuous integration task."""
 
-    def __init__(self, T_trial,  input_var=1, sensitivity=0.4,
+    def __init__(self, T_trial, input_var=1, sensitivity=0.4,
                  c_values=[-0.512, -0.256, -0.128, -0.064, -0.032,
                            0, 0.032, 0.064, 0.128, 0.256, 0.512]):
         """Later
@@ -33,7 +35,6 @@ class Cts_Integration_Task(Task):
         trial_switch = []
 
         for i_trial in range(N_trials):
-
             c = np.random.choice(self.c_values)
             mu = self.sensitivity * c
             x_trial = np.random.normal(mu, self.input_var, self.T_trial)

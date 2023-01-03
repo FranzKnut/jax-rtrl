@@ -1,7 +1,10 @@
-import os, pickle
+import os
+import pickle
 from math import ceil
+
 from cluster import write_job_file, submit_job
 from wrappers.get_default_args import get_default_args
+
 
 def cross_topological_analysis(saved_run_root_name,
                                project_name='learning-dynamics',
@@ -100,5 +103,3 @@ def cross_topological_analysis(saved_run_root_name,
                id_dependency=analysis_id_dependency)
 
     ### --- Combine parallelized compare results when done --- ###
-
-

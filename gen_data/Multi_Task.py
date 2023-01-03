@@ -1,5 +1,6 @@
 import numpy as np
 
+
 class Multi_Task:
     """A class for online training in a multi-task setup. The class is initiated
     with a list of subclasses and a boolean indicating whether context inputs
@@ -33,19 +34,19 @@ class Multi_Task:
         """Generate a training dataset, which consists of a sampling of
         tasks."""
 
-        if type(N_train)==int:
+        if type(N_train) == int:
             Ns = [{'task_id': i,
-                   'N': N_train // self.n_tasks} for i in range(self.n_tasks)]
-        elif type(N_train)==list:
+                   'N':       N_train // self.n_tasks} for i in range(self.n_tasks)]
+        elif type(N_train) == list:
             Ns = N_train
 
-        #Initialize total_data and task_marker with the first task.
+        # Initialize total_data and task_marker with the first task.
         X, Y, trial_type, trial_switch, loss_mask = self.tasks[Ns[0]['task_id']].gen_dataset(Ns[0]['N'])
-        total_data = {'X': X, 'Y': Y, 'trial_type': trial_type,
+        total_data = {'X':            X, 'Y': Y, 'trial_type': trial_type,
                       'trial_switch': trial_switch, 'loss_mask': loss_mask}
         task_marker = [np.ones(Ns[0]['N']) * Ns[0]['task_id']]
 
-        #Loop through the rest of the tasks and concatenate
+        # Loop through the rest of the tasks and concatenate
         for i_block in range(1, len(Ns)):
 
             i_task = Ns[i_block]['task_id']
@@ -53,7 +54,7 @@ class Multi_Task:
             N = Ns[i_block]['N']
             X, Y, trial_type, trial_switch, loss_mask = task.gen_dataset(N)
 
-            #Zero-pad lower-dimensional tasks in inputs and outputs
+            # Zero-pad lower-dimensional tasks in inputs and outputs
             if task.n_in < self.max_n_in:
                 zero_pads = np.zeros((N, self.max_n_in - task.n_in))
                 X = np.hstack([X, zero_pads])
@@ -73,10 +74,10 @@ class Multi_Task:
 
             task_marker.append(np.ones(N) * i_task)
 
-        #Add task_marker to data
+        # Add task_marker to data
         total_data['task_marker'] = np.concatenate(task_marker).astype(np.int)
 
-        #If specified, turn task_marker into a one-hot and append to inputs
+        # If specified, turn task_marker into a one-hot and append to inputs
         if self.context_input:
             context = np.eye(self.n_tasks)[total_data['task_marker']]
             total_data['X'] = np.hstack([total_data['X'], context])
@@ -92,7 +93,7 @@ class Multi_Task:
 
             X, Y, trial_type, trial_switch, loss_mask = task.gen_dataset(N_test)
             key = 'test_{}'.format(i_task)
-            data[key] = {'X': X, 'Y': Y, 'trial_type': trial_type,
+            data[key] = {'X':            X, 'Y': Y, 'trial_type': trial_type,
                          'trial_switch': trial_switch, 'loss_mask': loss_mask}
 
             if self.context_input:

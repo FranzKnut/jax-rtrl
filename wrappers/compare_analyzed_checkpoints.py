@@ -1,6 +1,8 @@
-import os, pickle
+import pickle
+
 from cluster import unpack_analysis_results
 from dynamics import *
+
 
 def compare_analyzed_checkpoints(analysis_job_name,
                                  compare_args,
@@ -87,7 +89,7 @@ def compare_analyzed_checkpoints(analysis_job_name,
     if weight_change_alignment:
         weight_change_alignment_distances = np.zeros((n_checkpoints, n_checkpoints))
 
-    #Compare window
+    # Compare window
     if compare_args['n_comp_window'] == 'full':
         n_comp_window = len(indices)
     else:
@@ -119,7 +121,7 @@ def compare_analyzed_checkpoints(analysis_job_name,
                     #                   n_inputs=compare_args['n_inputs'])
                     # align_checkpoints(checkpoint_2, checkpoint_1,
                     #                   n_inputs=compare_args['n_inputs'])
-                    #align_checkpoints_based_on_output(checkpoint_2, checkpoint_1,
+                    # align_checkpoints_based_on_output(checkpoint_2, checkpoint_1,
                     # #                                  n_inputs=compare_args['n_inputs'])
                     # align_checkpoints_based_on_output(checkpoint_2, checkpoint_1,
                     #                                   n_inputs=compare_args['n_inputs'])
@@ -158,7 +160,8 @@ def compare_analyzed_checkpoints(analysis_job_name,
                                                                        checkpoint_2,
                                                                        node_diff_penalty=0,
                                                                        n_inputs=compare_args['n_inputs'],
-                                                                       minimize_over_permutations=compare_args['minimize_over_permutations'])
+                                                                       minimize_over_permutations=compare_args[
+                                                                           'minimize_over_permutations'])
             if node_diff:
                 node_diff_distances[i, j] = node_diff_distance(checkpoint_1,
                                                                checkpoint_2)

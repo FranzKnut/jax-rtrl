@@ -1,11 +1,14 @@
 from math import ceil
+
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
-from scipy.signal import decimate
 from scipy.ndimage.filters import uniform_filter1d
+from scipy.signal import decimate
 from sklearn.manifold import MDS, TSNE
+
 from utils import get_param_values_from_list_of_config_strings
+
 
 def plot_eigenvalues(*matrices, fig=None, return_fig=False):
     """Plots eigenvalues of a given matrix in the complex plane, as well
@@ -13,7 +16,7 @@ def plot_eigenvalues(*matrices, fig=None, return_fig=False):
 
     if fig is None:
         fig = plt.figure()
-    theta = np.arange(0, 2*np.pi, 0.01)
+    theta = np.arange(0, 2 * np.pi, 0.01)
     plt.plot(np.cos(theta), np.sin(theta), 'k', linestyle='--', linewidth=1.5)
     plt.axis('equal')
 
@@ -24,8 +27,9 @@ def plot_eigenvalues(*matrices, fig=None, return_fig=False):
     if return_fig:
         return fig
 
+
 def plot_array_of_histograms(counts, weights, ticks=None, return_fig=True,
-                             plot_zero_line=True, fig_size=(6,3), **kwargs):
+                             plot_zero_line=True, fig_size=(6, 3), **kwargs):
     """Plots count data in the shape (n_samples, n_row, n_col) as an array
     of histograms with n_row rows and n_col cols."""
 
@@ -45,14 +49,14 @@ def plot_array_of_histograms(counts, weights, ticks=None, return_fig=True,
                 continue
             w = weights[:, i, j]
             hist, bins = np.histogram(counts[:, i, j],
-                                      weights=w/w.sum(),
+                                      weights=w / w.sum(),
                                       bins=np.linspace(-1, 1, n_bins),
                                       density=True)
-            bin_centers = bins[:-1] + (bins[1] - bins[0])/2
-            #weighted_medians[i, j] = weighted_median(hist, bin_centers)
+            bin_centers = bins[:-1] + (bins[1] - bins[0]) / 2
+            # weighted_medians[i, j] = weighted_median(hist, bin_centers)
             weighted_medians[i, j] = np.mean(counts[:, i, j])
             hist = uniform_filter1d(hist, 10)
-            #ax[i, j].hist(counts[:, i, j], bins=np.linspace(-1, 1, n_bins))
+            # ax[i, j].hist(counts[:, i, j], bins=np.linspace(-1, 1, n_bins))
             ax[i, j].plot(bin_centers, hist, linewidth=0.7)
             ax[i, j].fill_between(bin_centers,
                                   np.zeros_like(bin_centers),
@@ -60,25 +64,26 @@ def plot_array_of_histograms(counts, weights, ticks=None, return_fig=True,
                                   color='C0',
                                   alpha=0.3)
             ax[i, j].axvline(x=weighted_medians[i, j], color='C0',
-                             linestyle='--', dashes=[1.5,0.75], linewidth=0.7)
-            #ax[i, j].set_ylim([0, 2])
+                             linestyle='--', dashes=[1.5, 0.75], linewidth=0.7)
+            # ax[i, j].set_ylim([0, 2])
             if plot_zero_line:
                 ax[i, j].axvline(x=0, color='k', linestyle='--',
-                                 dashes=[1.5,0.75], linewidth=0.7)
+                                 dashes=[1.5, 0.75], linewidth=0.7)
             ax[i, j].set_yticks([])
             if ticks is not None:
                 if i == counts.shape[1] - 1:
                     pass
                     ax[i, j].set_xticks([])
-                    #ax[i, j].set_xlabel(ticks[j])
+                    # ax[i, j].set_xlabel(ticks[j])
                 else:
                     ax[i, j].set_xticks([])
                 if j == 0:
                     pass
-                    #ax[i, j].set_ylabel(ticks[i])
+                    # ax[i, j].set_ylabel(ticks[i])
 
     if return_fig:
         return (fig, weighted_medians)
+
 
 def plot_array_of_downsampled_signals(signals, ticks=None, return_fig=False,
                                       plot_zero_line=True, **kwargs):
@@ -98,9 +103,9 @@ def plot_array_of_downsampled_signals(signals, ticks=None, return_fig=False,
                 fig.delaxes(ax[i, j])
                 continue
             signal = decimate(decimate(decimate(signals[:, i, j], 10), 10), 10)
-            #time_ = np.arange(0, signals.shape[0], 1000)
-            #i_time_ticks = [len(time_)//5*i for i in range(5)]
-            #time_ticks = time_[np.array(i_time_ticks)]
+            # time_ = np.arange(0, signals.shape[0], 1000)
+            # i_time_ticks = [len(time_)//5*i for i in range(5)]
+            # time_ticks = time_[np.array(i_time_ticks)]
             ax[i, j].plot(signal)
             ax[i, j].set_ylim([-1, 1])
             if plot_zero_line:
@@ -108,9 +113,9 @@ def plot_array_of_downsampled_signals(signals, ticks=None, return_fig=False,
             if ticks is not None:
                 if i == signals.shape[1] - 1:
                     ax[i, j].set_xlabel(ticks[j])
-                    #labels = ['{}k'.format(int(time_tick/1000)) for time_tick in time_ticks]
-                    #ax[i, j].set_xticks(time_ticks, labels)
-                    #set_trace()
+                    # labels = ['{}k'.format(int(time_tick/1000)) for time_tick in time_ticks]
+                    # ax[i, j].set_xticks(time_ticks, labels)
+                    # set_trace()
                 else:
                     ax[i, j].set_xticks([])
                 if j == 0:
@@ -122,22 +127,23 @@ def plot_array_of_downsampled_signals(signals, ticks=None, return_fig=False,
     if return_fig:
         return fig
 
+
 def plot_signal_xcorr(s1, s2, return_fig=False, finite_diff=True):
     """IN PROGRESS -- need principled method for computing xcorr for non-
     stationary signals."""
 
     assert s1.shape == s2.shape
 
-    #finite_difference
+    # finite_difference
 
     if finite_diff:
-        s1 = (s1[1:] - s1[:-1])# / (np.abs(s1[1:]) + np.abs(s1[:-1]) + 1)
-        s2 = (s2[1:] - s2[:-1])# / (np.abs(s2[1:]) + np.abs(s2[:-1]) + 1)
+        s1 = (s1[1:] - s1[:-1])  # / (np.abs(s1[1:]) + np.abs(s1[:-1]) + 1)
+        s2 = (s2[1:] - s2[:-1])  # / (np.abs(s2[1:]) + np.abs(s2[:-1]) + 1)
 
     n_pts = s1.shape[0]
     lags = np.arange(1 - n_pts, n_pts)
-    #s1 = (s1 - s1.mean()) / np.std(s1)
-    #s2 = (s2 - s2.mean()) / np.std(s2)
+    # s1 = (s1 - s1.mean()) / np.std(s1)
+    # s2 = (s2 - s2.mean()) / np.std(s2)
 
     xcorr = np.correlate(s1, s2, 'full') / max(len(s1), len(s2))
 
@@ -147,6 +153,7 @@ def plot_signal_xcorr(s1, s2, return_fig=False, finite_diff=True):
 
     if return_fig:
         return fig
+
 
 def plot_2d_MDS_from_distance_matrix(distances, point_classes, return_fig=False,
                                      alpha=1, markersize=10):
@@ -159,7 +166,6 @@ def plot_2d_MDS_from_distance_matrix(distances, point_classes, return_fig=False,
     fig = plt.figure()
 
     for i_class in range(len(np.unique(point_classes))):
-
         col = 'C{}'.format(i_class)
         class_idx = np.where(point_classes == i_class)[0]
         start_idx = np.amin(class_idx)
@@ -172,6 +178,7 @@ def plot_2d_MDS_from_distance_matrix(distances, point_classes, return_fig=False,
 
     if return_fig:
         return fig
+
 
 def plot_3d_MDS_from_distance_matrix(distances, point_classes,
                                      return_fig=False, mds_=None,
@@ -216,14 +223,14 @@ def plot_3d_MDS_from_distance_matrix(distances, point_classes,
 
         color_avgs[col].append(proj[class_idx])
 
-    #Plot average within color
+    # Plot average within color
     for key in color_avgs.keys():
-
         avg = sum(color_avgs[key]) / len(color_avgs[key])
         ax.plot(avg[:, 0], avg[:, 1], avg[:, 2], color=key)
 
     if return_fig:
         return fig
+
 
 def plot_3d_tSNE_from_distance_matrix(distances, point_classes,
                                       return_fig=False, tsne_=None,
@@ -269,9 +276,8 @@ def plot_3d_tSNE_from_distance_matrix(distances, point_classes,
 
         color_avgs[col].append(proj[class_idx])
 
-    #Plot average within color
+    # Plot average within color
     for key in color_avgs.keys():
-
         avg = sum(color_avgs[key]) / len(color_avgs[key])
         ax.plot(avg[:, 0], avg[:, 1], avg[:, 2], color=key)
 
@@ -334,9 +340,9 @@ def plot_signals(signals, key_restriction=None, title=None, x_values=None,
             x = x_values[:len(stage_assignments)]
         else:
             x = np.array(range(len(stage_assignments)))
-        ylim = -1.2 * (len(keys) -1)
+        ylim = -1.2 * (len(keys) - 1)
         for i in range(4):
-            #x_stage = x[stage_assignments == i + 1]
+            # x_stage = x[stage_assignments == i + 1]
             where_ = stage_assignments == i + 1
             plt.fill_between(x=x, y1=1, y2=ylim, color=sa_colors[i],
                              alpha=0.3, where=where_)
@@ -348,6 +354,7 @@ def plot_signals(signals, key_restriction=None, title=None, x_values=None,
         plt.title(title)
 
     return fig
+
 
 def plot_multiple_signals(signal_dicts, key_restriction=None, title=None,
                           x_values=None, signal_clips={}, alpha=1):
@@ -398,7 +405,7 @@ def plot_multiple_signals(signal_dicts, key_restriction=None, title=None,
             if title is not None:
                 plt.title(title)
 
-    #Plot averages
+    # Plot averages
     for i_key, key in enumerate(signals_for_avg):
         y_avg = np.array(signals_for_avg[key]).mean(0)
 
@@ -441,6 +448,7 @@ def plot_2d_array_of_config_results(configs_array, results_array, key_order,
 
     return fig
 
+
 def plot_3d_or_4d_array_of_config_results(configs_array, results_array, key_order,
                                           tick_rounding=3, **imshow_kwargs):
     """Given an array of configs (must be 3-4D) and corresponding results as
@@ -454,8 +462,8 @@ def plot_3d_or_4d_array_of_config_results(configs_array, results_array, key_orde
     elif d_grid == 2:
         n_x, n_y = results_array.shape[2:4]
     else:
-        #from pdb import set_trace
-        #set_trace()
+        # from pdb import set_trace
+        # set_trace()
         raise ValueError('Configs must be 3 or 4 dimensional')
 
     fig, axes = plt.subplots(n_x, n_y, figsize=(n_y * 5, n_x * 5))
@@ -464,10 +472,10 @@ def plot_3d_or_4d_array_of_config_results(configs_array, results_array, key_orde
         for i_y in range(n_y):
 
             if d_grid == 1:
-                results_slice = results_array[:,:,i_y,:].mean(-1)
+                results_slice = results_array[:, :, i_y, :].mean(-1)
                 ax = axes[i_y]
             if d_grid == 2:
-                results_slice = results_array[:,:,i_x,i_y,:].mean(-1)
+                results_slice = results_array[:, :, i_x, i_y, :].mean(-1)
                 ax = axes[i_x, i_y]
 
             ax.imshow(results_slice, **imshow_kwargs)
@@ -501,9 +509,10 @@ def plot_3d_or_4d_array_of_config_results(configs_array, results_array, key_orde
 
             ax.set_title(title)
 
-    #plt.colorbar()
+    # plt.colorbar()
 
     return fig
+
 
 def plot_1d_or_2d_array_of_config_examples(configs_array, results_array,
                                            key_order, sim_dict, data,
@@ -577,6 +586,7 @@ def plot_1d_or_2d_array_of_config_examples(configs_array, results_array,
 
     return fig
 
+
 def plot_kinetic_energy_histograms(indices, checkpoints, return_fig=False,
                                    red_line=-4):
     """For a list of ordered indices and corresponding dict of checkpoints,
@@ -619,6 +629,7 @@ def plot_kinetic_energy_histograms(indices, checkpoints, return_fig=False,
     if return_fig:
         return fig
 
+
 def plot_task_data(data, mode='train', time_points=100, curve_spacing=1.2):
     """Plot the X and Y values of a data matrix from a given task"""
 
@@ -633,17 +644,18 @@ def plot_task_data(data, mode='train', time_points=100, curve_spacing=1.2):
         Y = data[mode]['Y'][:time_points, i_y]
         plt.plot(Y - curve_spacing * (i_y + x_dim), color='C3')
 
+
 def color_fader(color_1, color_2, mix=0):
     color_1 = np.array(mpl.colors.to_rgb(color_1))
     color_2 = np.array(mpl.colors.to_rgb(color_2))
     return mpl.colors.to_hex((1 - mix) * color_1 + mix * color_2)
+
 
 def plot_array_of_signals(signal_dicts, root_name,
                           signal_keys=[], x_values=None, return_fig=False,
                           colors=None, alpha=1, fig_width=3.4252, fig_length=4,
                           swap_order=False, param_values_=None,
                           key_order_=None, common_ylim=None):
-
     if param_values_ is None or key_order_ is None:
         param_values, key_order = get_param_values_from_list_of_config_strings(signal_dicts,
                                                                                root_name=root_name)
@@ -658,7 +670,7 @@ def plot_array_of_signals(signal_dicts, root_name,
     if len(value_keys) > 2:
         raise ValueError('Must be no more than 2 parameter variations')
     if len(value_keys) == 1:
-        #Add dummy parameter
+        # Add dummy parameter
         param_values['dummy'] = [0, 1]
         value_keys.append('dummy')
 
@@ -709,6 +721,7 @@ def plot_array_of_signals(signal_dicts, root_name,
     if return_fig:
         return fig
 
+
 def plot_time_spent_in_stages(ordered_dict_of_stage_assignments, colors=None,
                               fig_width=3.4252, fig_length=4,
                               return_fig=False):
@@ -733,6 +746,7 @@ def plot_time_spent_in_stages(ordered_dict_of_stage_assignments, colors=None,
 
     if return_fig:
         return fig
+
 
 def plot_bar_time_spent_in_stages(ordered_dict_of_stage_assignments, color='C0',
                                   fig_width=3.4252, fig_length=4,

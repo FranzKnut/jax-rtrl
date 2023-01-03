@@ -1,6 +1,8 @@
-from learning_algorithms.Learning_Algorithm import Learning_Algorithm
 import numpy as np
+
+from learning_algorithms.Learning_Algorithm import Learning_Algorithm
 from utils import norm
+
 
 class Efficient_BPTT(Learning_Algorithm):
     """Implements the 'E-BPTT' version of backprop we discuss in the paper for

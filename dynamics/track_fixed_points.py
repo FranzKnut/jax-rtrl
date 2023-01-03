@@ -1,6 +1,7 @@
 import numpy as np
 from scipy.spatial import distance
 
+
 class Node_Trajectory:
 
     def __init__(self, checkpoints_dict, distance_threshold=0.01):
@@ -18,11 +19,11 @@ class Node_Trajectory:
         duration of the node's "lifespan" and its corresponding occupancies
         in state space."""
 
-        self.nodes_dict = {int(key.split('_')[-1]) : checkpoints_dict[key]['nodes']
+        self.nodes_dict = {int(key.split('_')[-1]): checkpoints_dict[key]['nodes']
                            for key in checkpoints_dict
                            if 'checkpoint' in key}
 
-        #List of unique no
+        # List of unique no
         unique_node_trajectories = []
 
         ### --- Initialize with first nodes --- ###
@@ -31,11 +32,11 @@ class Node_Trajectory:
         active_node_idx = list(range(initial_nodes.shape[0]))
         n_total_nodes = len(active_node_idx)
         for node in initial_nodes:
-            unique_node_trajectories.append({'time_steps': [0],
+            unique_node_trajectories.append({'time_steps':      [0],
                                              'node_coordinate': [node]})
         prev_nodes = initial_nodes
         for time_step, nodes_array in self.nodes_dict.items():
-            #print(time_step)
+            # print(time_step)
 
             n_nodes = nodes_array.shape[0]
             n_prev_nodes = prev_nodes.shape[0]
@@ -65,9 +66,9 @@ class Node_Trajectory:
             [extra_indices.remove(i) for i in I_]
             I = I_ + extra_indices
             n_matched_nodes = len(I_x)
-            #Keep only active nodes, in same relative order
+            # Keep only active nodes, in same relative order
             active_node_idx = [active_node_idx[i_x] for i_x in I_f]
-            #Add extra new nodes
+            # Add extra new nodes
             n_new_nodes = n_nodes - n_matched_nodes
             new_nodes = list(range(n_total_nodes, n_total_nodes + n_new_nodes))
             active_node_idx += new_nodes
@@ -83,7 +84,6 @@ class Node_Trajectory:
                     unique_node_trajectories.append({})
                     unique_node_trajectories[active_node]['time_steps'] = [time_step]
                     unique_node_trajectories[active_node]['node_coordinate'] = [node]
-
 
             # if n_prev_nodes == n_nodes:
             #

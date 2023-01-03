@@ -1,9 +1,12 @@
-import sys, os
+import os
+import sys
+
 sys.path.append(os.path.abspath('..'))
 from utils import split_weight_matrix
 import numpy as np
 from core import Simulation
 from continual_learning.Continual_Learning import Continual_Learning
+
 
 class Duncker_Method(Continual_Learning):
     """CL Method that preferentially updates parameters in directions
@@ -135,12 +138,12 @@ class Duncker_Method(Continual_Learning):
         n_h = grads[0].shape[0]
         n_in = grads[1].shape[1]
 
-        #Concatenate gradients in relevant directions
+        # Concatenate gradients in relevant directions
         W_grad = np.concatenate([grads[0], grads[1],
-                                 grads[2].reshape(-1,1)], axis=1)
-        W_out_grad = np.concatenate([grads[3], grads[4].reshape(-1,1)], axis=1)
+                                 grads[2].reshape(-1, 1)], axis=1)
+        W_out_grad = np.concatenate([grads[3], grads[4].reshape(-1, 1)], axis=1)
 
-        #Project along projection matrices
+        # Project along projection matrices
         W_grad_proj = self.rec_proj_mats[0].dot(W_grad)
         W_grad_proj = W_grad_proj.dot(self.rec_proj_mats[1])
         W_out_grad_proj = self.out_proj_mats[0].dot(W_out_grad)

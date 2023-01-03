@@ -1,6 +1,9 @@
-import os, pickle
-import numpy as np
+import os
+import pickle
 from copy import deepcopy
+
+import numpy as np
+
 
 def unpack_analysis_results(data_path):
     """For a path to results, unpacks the data into a dict of checkpoints
@@ -81,6 +84,7 @@ def unpack_compare_result(saved_run_name, checkpoint_stats={},
 
     return signals
 
+
 def unpack_cross_compare_result(saved_run_root_name, checkpoint_stats={},
                                 relative_weight_change=True,
                                 multi_job_comp=False,
@@ -94,7 +98,6 @@ def unpack_cross_compare_result(saved_run_root_name, checkpoint_stats={},
         saved_run_name (str): Original file name of analyzed simulation
         checkpoint_stats (dict): Dictionary whose entries are
             functions that take in a checkpoint and return some float."""
-
 
     ### --- Get paths, extract and unpack compare data --- ###
 
@@ -159,6 +162,7 @@ def unpack_cross_compare_result(saved_run_root_name, checkpoint_stats={},
         signal_dicts[analysis_job_name] = signals_
 
     return signal_dicts, result
+
 
 def unpack_sparse_cross_compare_results(saved_run_root_name,
                                         project_name='learning-dynamics',

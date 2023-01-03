@@ -1,8 +1,11 @@
-import numpy as np
-from core import Simulation
-from scipy.spatial import distance
-from utils import norm
 from copy import deepcopy
+
+import numpy as np
+from scipy.spatial import distance
+
+from core import Simulation
+from utils import norm
+
 
 def get_test_sim_data(checkpoint, test_data, sigma=0):
     """Get hidden states from a test run for a given checkpoint"""
@@ -16,6 +19,7 @@ def get_test_sim_data(checkpoint, test_data, sigma=0):
                  sigma=sigma)
 
     return test_sim.mons['rnn.a']
+
 
 def align_checkpoints(checkpoint, reference_checkpoint, n_inputs=6):
     """Finds the best possible alignment between fixed point clusters (as
@@ -53,8 +57,8 @@ def align_checkpoints(checkpoint, reference_checkpoint, n_inputs=6):
         I_x.append(x)
         I_y.append(y)
 
-        D[x,:] = np.inf
-        D[:,y] = np.inf
+        D[x, :] = np.inf
+        D[:, y] = np.inf
 
     I_ = [I_y[i_x] for i_x in np.argsort(I_x)]
     I_f = sorted(I_x)
@@ -68,14 +72,15 @@ def align_checkpoints(checkpoint, reference_checkpoint, n_inputs=6):
     for key in keys:
 
         if 'adjmat' in key:
-            checkpoint[key] = checkpoint[key][I][:,I]
-            checkpoint['backshared_' + key] = checkpoint[key][I_b][:,I_b]
-            reference_checkpoint['forwardshared_' + key] = reference_checkpoint[key][I_f][:,I_f]
+            checkpoint[key] = checkpoint[key][I][:, I]
+            checkpoint['backshared_' + key] = checkpoint[key][I_b][:, I_b]
+            reference_checkpoint['forwardshared_' + key] = reference_checkpoint[key][I_f][:, I_f]
 
         if key == 'nodes':
             checkpoint[key] = checkpoint[key][I]
 
     checkpoint['corr_node_distances'] = [corr_node_distances[i_x] for i_x in np.argsort(I_x)]
+
 
 def linearly_interpolate_checkpoints(sim, start_checkpoint, end_checkpoint,
                                      density):
@@ -98,7 +103,6 @@ def linearly_interpolate_checkpoints(sim, start_checkpoint, end_checkpoint,
     b_out_diff = rnn_end.b_out - rnn_start.b_out
 
     for i_t in timeline:
-
         checkpoint = {'i_t': i_t}
 
         scale = i_t * slope
@@ -123,7 +127,6 @@ def linearly_interpolate_checkpoints(sim, start_checkpoint, end_checkpoint,
 
 
 def concatenate_simulation_checkpoints(simulations):
-
     dicts = [s.checkpoints for s in simulations]
 
     ret = dicts.pop(0)
@@ -136,6 +139,7 @@ def concatenate_simulation_checkpoints(simulations):
 
     return ret
 
+
 def align_checkpoints_based_on_output(checkpoint, reference_checkpoint,
                                       n_inputs=6, output_perm=None):
     """Align a pair of checkpoints, i.e. re-index the arbitrary order of fixed
@@ -144,22 +148,22 @@ def align_checkpoints_based_on_output(checkpoint, reference_checkpoint,
     The alignment is based on the distances between the fixed points in output
     space, i.e. when each fixed point is mapped to its output by its own RNN."""
 
-    #Get local access to the stable fixed points from each checkpoint.
+    # Get local access to the stable fixed points from each checkpoint.
     ref_nodes = reference_checkpoint['nodes']
     nodes = checkpoint['nodes']
 
-    #Get RNNs for each checkpoint
+    # Get RNNs for each checkpoint
     rnn = deepcopy(checkpoint['rnn'])
     ref_rnn = deepcopy((reference_checkpoint['rnn']))
 
-    #Keep track of the *original* indices for each corresponding node pairs
-    #in order
+    # Keep track of the *original* indices for each corresponding node pairs
+    # in order
     n_nodes = nodes.shape[0]
     n_ref_nodes = ref_nodes.shape[0]
     I_x = []
     I_y = []
 
-    #Get associated output for each set of nodes, align based on this
+    # Get associated output for each set of nodes, align based on this
     ref_outputs = [ref_rnn.output.f(ref_rnn.W_out.dot(ref_node) + ref_rnn.b_out)
                    for ref_node in ref_nodes]
     ref_outputs = np.vstack(ref_outputs)
@@ -169,25 +173,25 @@ def align_checkpoints_based_on_output(checkpoint, reference_checkpoint,
     if output_perm is not None:
         outputs = outputs[:, output_perm]
 
-    #Collect all pairwise distances between ref and target checkpoint outputs
-    #at each pair of fixed points.
+    # Collect all pairwise distances between ref and target checkpoint outputs
+    # at each pair of fixed points.
     D = distance.cdist(ref_outputs, outputs)
 
-    #Keep track of the distances for the corresponding fixed point pairs, both
-    #in output and hidden space.
+    # Keep track of the distances for the corresponding fixed point pairs, both
+    # in output and hidden space.
     corr_node_output_distances = []
     corr_node_distances = []
 
-    #Loop through to identify corresponding points until the number of ref
-    #nodes reaches the number of target nodes
+    # Loop through to identify corresponding points until the number of ref
+    # nodes reaches the number of target nodes
     while len(I_x) < n_nodes:
 
-        #Identify the next smallest distance between nodes
+        # Identify the next smallest distance between nodes
         d = np.argmin(D)
         d_min = np.min(D)
         x, y = (d // n_nodes), (d % n_nodes)
 
-        #If all nodes have been matched, break
+        # If all nodes have been matched, break
         if d_min == np.inf:
             break
         else:
@@ -197,26 +201,26 @@ def align_checkpoints_based_on_output(checkpoint, reference_checkpoint,
             except ValueError:
                 corr_node_distances.append(None)
 
-        #Track original indices of ref and target
+        # Track original indices of ref and target
         I_x.append(x)
         I_y.append(y)
 
-        #Make all distances for both nodes in identified pair infinite so as to
-        #not double-count.
-        D[x,:] = np.inf
-        D[:,y] = np.inf
+        # Make all distances for both nodes in identified pair infinite so as to
+        # not double-count.
+        D[x, :] = np.inf
+        D[:, y] = np.inf
 
-    #For each reference index (in original order), list the corresponding
-    #target index in that same order
+    # For each reference index (in original order), list the corresponding
+    # target index in that same order
     I_ = [I_y[i_x] for i_x in np.argsort(I_x)]
 
-    #Get the "forward" indices, i.e. the same order for ref checkpoint (since
-    #order doesn't change for ref checkpoint) but
-    #only those that were matched to a target index
+    # Get the "forward" indices, i.e. the same order for ref checkpoint (since
+    # order doesn't change for ref checkpoint) but
+    # only those that were matched to a target index
     I_f = sorted(I_x)
 
-    #Get the "back" indices, i.e. the indices for target checkpoint ordered
-    #according to the ref index order (not sorted). These are identically I_.
+    # Get the "back" indices, i.e. the indices for target checkpoint ordered
+    # according to the ref index order (not sorted). These are identically I_.
     I_b = [i for i in I_]
     extra_indices = list(range(n_nodes))
     [extra_indices.remove(i) for i in I_]
@@ -242,7 +246,6 @@ def align_checkpoints_based_on_output(checkpoint, reference_checkpoint,
 
         if key == 'nodes':
             checkpoint[key] = checkpoint[key][I]
-
 
     checkpoint['corr_node_distances'] = [corr_node_distances[i_x]
                                          for i_x in np.argsort(I_x)]

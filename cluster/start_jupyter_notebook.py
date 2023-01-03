@@ -1,11 +1,15 @@
-import subprocess, os
+import os
+import subprocess
+
 from cluster.sync_cluster import sync_cluster
+
 try:
     import webbrowser
     import appscript
 except ModuleNotFoundError:
     pass
 import time
+
 
 def start_jupyter_notebook(local_module_path='/Users/omarschall/vanilla-rtrl/',
                            module_name='vanilla-rtrl/',
@@ -44,7 +48,6 @@ def start_jupyter_notebook(local_module_path='/Users/omarschall/vanilla-rtrl/',
     subprocess.run(['ssh', remote,
                     'sbatch', jupyter_slurm_path])
 
-
     ### --- Repeatedly check for connection info in output file --- ###
 
     done = False
@@ -71,7 +74,7 @@ def start_jupyter_notebook(local_module_path='/Users/omarschall/vanilla-rtrl/',
 
     cluster_login = 'ssh -L {}:localhost:{} {}'.format(port, port, remote)
     appscript.app('Terminal').do_script(cluster_login)
-    time.sleep(5) #Give terminal a few seconds to run SSH
+    time.sleep(5)  # Give terminal a few seconds to run SSH
 
     ### --- Open jupyter notebook in browser --- ###
 

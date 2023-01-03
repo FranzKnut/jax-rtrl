@@ -1,5 +1,7 @@
-from learning_algorithms.Learning_Algorithm import Learning_Algorithm
 import numpy as np
+
+from learning_algorithms.Learning_Algorithm import Learning_Algorithm
+
 
 class Miconi_REINFORCE(Learning_Algorithm):
     def __init__(self, rnn, sigma=0, p=1, n_trial_types=1, **kwargs):
@@ -46,7 +48,6 @@ class Miconi_REINFORCE(Learning_Algorithm):
         """Updates the eligibility traces used for learning"""
         # presynaptic variables/parameters
 
-
         ### random perturbations from here?
 
         self.a_hat = np.concatenate([self.rnn.a_prev,
@@ -60,21 +61,20 @@ class Miconi_REINFORCE(Learning_Algorithm):
 
         # matrix of pre/post activations
         self.e_immediate = np.outer(self.D, self.a_hat)
-        #self.e_trace = ((1 - self.tau_e_trace) * self.e_trace\
+        # self.e_trace = ((1 - self.tau_e_trace) * self.e_trace\
         #                + self.tau_e_trace * self.e_immediate**3)
         self.e_trace = self.e_trace + self.e_immediate ** 3
         self.loss_prev = self.loss
         self.loss = self.rnn.loss_
         i_tt = self.rnn.trial_type
         self.loss_avg[i_tt] = ((1 - self.loss_decay) * self.loss_avg[i_tt] +
-                                self.loss_decay * self.loss_prev)
+                               self.loss_decay * self.loss_prev)
 
         ### --- Perturb system for next time step --- ###
         self.pert = np.random.binomial(1, p=self.p, size=self.n_h)
         self.pert = self.pert * np.random.normal(0, self.sigma, self.n_h)
 
         self.rnn.h += self.pert
-
 
     def get_rec_grads(self):
         """Combine the eligibility trace and the reward to get an estimate

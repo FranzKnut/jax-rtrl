@@ -1,4 +1,6 @@
-import subprocess, os
+import os
+import subprocess
+
 
 def sync_cluster(local_module_path='/Users/omarschall/vanilla-rtrl/',
                  module_name='vanilla-rtrl',
@@ -8,7 +10,6 @@ def sync_cluster(local_module_path='/Users/omarschall/vanilla-rtrl/',
     scratch_path = '/scratch/{}/'.format(username)
 
     module_path = os.path.join(scratch_path, module_name)
-
 
     remote_path = '{}@{}:{}'.format(username, domain, module_path)
     subprocess.run(['rsync', '-aav',

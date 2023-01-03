@@ -1,7 +1,10 @@
-import sys, os
+import os
+import sys
+
 sys.path.append(os.path.abspath('..'))
 import numpy as np
 from continual_learning.Continual_Learning import Continual_Learning
+
 
 class Synaptic_Intelligence(Continual_Learning):
     """CL Method that preferentially weights each parameter by its importance
@@ -36,7 +39,7 @@ class Synaptic_Intelligence(Continual_Learning):
         (the optimizer velocity) with the gradient as computed by the learning
         algorithm, updated online at each time step."""
 
-        #Update omegas
+        # Update omegas
         for i_param in range(len(self.SI_omega)):
             v = sim.optimizer.vel[i_param]
             g = sim.grads_list[i_param]
@@ -53,7 +56,7 @@ class Synaptic_Intelligence(Continual_Learning):
         for i_param in range(len(self.SI_omega)):
             omega = self.SI_omega[i_param]
             Delta = self.SI_Delta[i_param]
-            self.SI_Omega[i_param] += omega / (Delta**2 + self.epsilon)
+            self.SI_Omega[i_param] += omega / (Delta ** 2 + self.epsilon)
 
         self.SI_omega = [np.zeros(s) for s in self.rnn.shapes]
 
@@ -64,7 +67,6 @@ class Synaptic_Intelligence(Continual_Learning):
         new_grads = []
         diff = []
         for i_param, grad in enumerate(grads_list):
-
             Omega = self.SI_Omega[i_param]
             Theta = self.rnn.params[i_param]
             Theta_tilde = self.SI_Theta[-1][i_param]

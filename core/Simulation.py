@@ -1,7 +1,10 @@
-from copy import copy, deepcopy
 import time
-from utils import *
+from copy import copy, deepcopy
+
 import numpy as np
+
+from utils import *
+
 
 class Simulation:
     """Simulates an RNN for a provided set of inputs and training procedures.
@@ -46,7 +49,7 @@ class Simulation:
         self.rnn = rnn
         self.__dict__.update(kwargs)
 
-        #Set to None all unspecified attributes
+        # Set to None all unspecified attributes
         for attr in allowed_kwargs:
             if not hasattr(self, attr):
                 setattr(self, attr, None)
@@ -128,7 +131,7 @@ class Simulation:
 
         ### --- Set new object attributes for run --- ###
 
-        #Create new pointers for conveneince
+        # Create new pointers for conveneince
         self.mode = mode
         self.monitors = monitors
         self.x_inputs = data[mode]['X']
@@ -143,14 +146,14 @@ class Simulation:
             self.loss_mask = data[mode]['loss_mask']
         self.total_time_steps = self.x_inputs.shape[0]
 
-        #Set defaults
+        # Set defaults
         self.verbose = True
         self.print = False
         self.test_current_task = True
         self.report_accuracy = False
         self.report_loss = False
         self.comp_algs = []
-        self.report_interval = max(self.total_time_steps//10, 1)
+        self.report_interval = max(self.total_time_steps // 10, 1)
         self.update_interval = 1
         self.i_start = 0
         self.i_trial = 0
@@ -159,10 +162,10 @@ class Simulation:
         self.checkpoint_learn_alg = False
         self.checkpoint_optimizer = False
 
-        #Overwrite defaults with any provided keyword args
+        # Overwrite defaults with any provided keyword args
         self.__dict__.update(kwargs)
 
-        #Set to None all unspecified attributes
+        # Set to None all unspecified attributes
         for attr in allowed_kwargs:
             if not hasattr(self, attr):
                 setattr(self, attr, None)
@@ -197,32 +200,32 @@ class Simulation:
 
             self.end_time_step(data)
 
-        #At end of run, convert monitor lists into numpy arrays
+        # At end of run, convert monitor lists into numpy arrays
         self.monitors_to_arrays()
 
-        #Checkpoint final model
+        # Checkpoint final model
         self.checkpoint_model()
 
-        #Delete data to save space
-        del(self.x_inputs)
-        del(self.y_labels)
+        # Delete data to save space
+        del (self.x_inputs)
+        del (self.y_labels)
         if 'task_marker' in data[mode].keys():
-            del(self.task_marker)
+            del (self.task_marker)
 
     def initialize_run(self):
         """Initializes a few variables before the time loop."""
 
-        #Initial best validation loss is infinite
+        # Initial best validation loss is infinite
         self.best_val_loss = np.inf
 
-        #Set up checkpoints dict if doesn't already exist from previous run
+        # Set up checkpoints dict if doesn't already exist from previous run
         if not hasattr(self, 'checkpoints'):
             self.checkpoints = {}
 
-        #Initialize rec_grads_dicts
+        # Initialize rec_grads_dicts
         if self.mode == 'train':
             self.algs = [self.learn_alg] + self.comp_algs
-            self.rec_grads_dict = {alg.name:[] for alg in self.algs}
+            self.rec_grads_dict = {alg.name: [] for alg in self.algs}
             self.T_lag = 0
             for alg in self.algs:
                 try:
@@ -231,24 +234,24 @@ class Simulation:
                 except AttributeError:
                     pass
 
-        #Initialize monitors
-        self.mons = {mon:[] for mon in self.monitors}
-        #Make all relevant algorithms attributes of self
+        # Initialize monitors
+        self.mons = {mon: [] for mon in self.monitors}
+        # Make all relevant algorithms attributes of self
         if self.mode == 'train':
             for comp_alg in self.comp_algs:
                 setattr(self, comp_alg.name, comp_alg)
             setattr(self, self.learn_alg.name, self.learn_alg)
 
-        #Set a random initial state of the network
+        # Set a random initial state of the network
         if self.a_initial is not None:
             self.rnn.reset_network(a=self.a_initial)
 
-        #To avoid errors, initialize "previous"
-        #inputs/labels as the first inputs/labels
+        # To avoid errors, initialize "previous"
+        # inputs/labels as the first inputs/labels
         self.rnn.x_prev = self.x_inputs[0]
         self.rnn.y_prev = self.y_labels[0]
 
-        #Track computation time
+        # Track computation time
         self.start_time = time.time()
 
     def trial_structure(self):
@@ -270,27 +273,27 @@ class Simulation:
     def forward_pass(self, x, y):
         """Runs network forward, computes immediate losses and errors."""
 
-        #Pointer for convenience
+        # Pointer for convenience
         rnn = self.rnn
 
-        #Pass data to network
+        # Pass data to network
         rnn.x = x
         rnn.y = y
 
-        #Run network forwards and get predictions
+        # Run network forwards and get predictions
         rnn.next_state(rnn.x, sigma=self.sigma)
         rnn.z_out()
 
-        #Compare outputs with labels, get immediate loss and errors
+        # Compare outputs with labels, get immediate loss and errors
         rnn.y_hat = rnn.output.f(rnn.z)
         rnn.loss_ = rnn.loss.f(rnn.z, rnn.y)
         rnn.error = rnn.loss.f_prime(rnn.z, rnn.y)
 
-        #Re-scale losses and errors if trial structure is provided
+        # Re-scale losses and errors if trial structure is provided
         if self.loss_mask is not None:
-            #Is this clunky numpy code or the slickeset use of numpy broadcasting
-            #rules maybe ever? You be the judge. Effortless translation into
-            #dimension-wise loss if that's a thing you care about.
+            # Is this clunky numpy code or the slickeset use of numpy broadcasting
+            # rules maybe ever? You be the judge. Effortless translation into
+            # dimension-wise loss if that's a thing you care about.
             rnn.loss_ *= self.loss_mask[self.i_t]
             rnn.error *= self.loss_mask[self.i_t]
 
@@ -299,7 +302,7 @@ class Simulation:
         apply them to self.rnn. Also calculates gradients from comparison
         algorithms."""
 
-        #Pointer for convenience
+        # Pointer for convenience
         rnn = self.rnn
 
         ### --- Continual learning --- ###
@@ -311,7 +314,7 @@ class Simulation:
 
         ### --- Calculate gradients --- ###
 
-        #Update learn_alg variables and get gradients
+        # Update learn_alg variables and get gradients
         self.learn_alg.update_learning_vars()
         self.grads_list = self.learn_alg()
 
@@ -322,9 +325,9 @@ class Simulation:
 
         ### --- Pass gradients to optimizer --- ###
 
-        #Only update on schedule (default update_interval=1)
-        if self.i_t%self.update_interval == 0:
-            #Get updated parameters
+        # Only update on schedule (default update_interval=1)
+        if self.i_t % self.update_interval == 0:
+            # Get updated parameters
             rnn.params = self.optimizer.get_updated_params(rnn.params,
                                                            self.grads_list)
             rnn.W_rec, rnn.W_in, rnn.b_rec, rnn.W_out, rnn.b_out = rnn.params
@@ -332,13 +335,13 @@ class Simulation:
     def end_time_step(self, data):
         """Cleans up after each time step in the time loop."""
 
-        #Compute spectral radii if desired
+        # Compute spectral radii if desired
         self.get_radii_and_norms()
 
-        #Monitor relevant variables
+        # Monitor relevant variables
         self.update_monitors()
 
-        #Evaluate model and save if performance is best
+        # Evaluate model and save if performance is best
         if self.best_model_interval is not None and self.mode == 'train':
             if self.i_t % self.best_model_interval == 0:
                 self.save_best_model(data)
@@ -351,13 +354,13 @@ class Simulation:
                 if self.i_t in self.checkpoint_interval:
                     self.checkpoint_model()
 
-        #Make report if conditions are met
+        # Make report if conditions are met
         if (self.i_t % self.report_interval == 0 and
-            self.i_t > 0 and
-            self.verbose):
+                self.i_t > 0 and
+                self.verbose):
             self.report_progress(data)
 
-        #Current inputs/labels become previous inputs/labels
+        # Current inputs/labels become previous inputs/labels
         self.rnn.x_prev = self.rnn.x.copy()
         self.rnn.y_prev = self.rnn.y.copy()
 
@@ -365,7 +368,7 @@ class Simulation:
         """"Reports progress at specified interval, including test run
         performance if specified."""
 
-        progress = np.round((self.i_t/self.total_time_steps)*100, 2)
+        progress = np.round((self.i_t / self.total_time_steps) * 100, 2)
         time_elapsed = np.round(time.time() - self.start_time, 1)
 
         summary = '\rProgress: {}% complete \nTime Elapsed: {}s \n'
@@ -376,7 +379,7 @@ class Simulation:
 
         if 'rnn.loss_' in self.mons.keys():
             interval = self.report_interval
-            avg_loss = sum(self.mons['rnn.loss_'][-interval:])/interval
+            avg_loss = sum(self.mons['rnn.loss_'][-interval:]) / interval
             loss = 'Average loss: {} \n'.format(avg_loss)
             summary += loss
 
@@ -457,7 +460,7 @@ class Simulation:
         if self.checkpoint_optimizer:
             checkpoint['optimizer'] = deepcopy(self.optimizer)
         if (self.i_t not in self.checkpoints.keys() or
-            self.overwrite_checkpoints):
+                self.overwrite_checkpoints):
             self.checkpoints[self.i_t] = checkpoint
 
     def get_test_sim(self):
@@ -476,16 +479,16 @@ class Simulation:
         """Computes alignment matrix for different learning algorithms run
         in parallel."""
 
-        #Update learning variables for the algorithms *not* being used to train
-        #the network
+        # Update learning variables for the algorithms *not* being used to train
+        # the network
         for i_alg, alg in enumerate(self.algs):
-            if i_alg > 0: #Only the comparison algorithms
+            if i_alg > 0:  # Only the comparison algorithms
                 alg.update_learning_vars()
                 alg()
             key = alg.name
-            #Store the rec_grad array for each algorithm in a list
+            # Store the rec_grad array for each algorithm in a list
             self.rec_grads_dict[key].append(alg.rec_grads)
-        #Get array of gradient alignments
+        # Get array of gradient alignments
         if 'alignment_matrix' in self.mons.keys():
             n_algs = len(self.algs)
             self.alignment_matrix = np.zeros((n_algs, n_algs))
@@ -493,8 +496,8 @@ class Simulation:
             for i, key_i in enumerate(self.rec_grads_dict):
                 for j, key_j in enumerate(self.rec_grads_dict):
 
-                    #For comparison with Future_BPTT, must lag gradients by
-                    #the truncation horizon
+                    # For comparison with Future_BPTT, must lag gradients by
+                    # the truncation horizon
                     if 'F-BPTT' in key_i:
                         i_index = -1
                     else:
@@ -504,20 +507,20 @@ class Simulation:
                     else:
                         j_index = 0
 
-                    #Store normalized dot product for each pair of algorithms
-                    #in the alignment matrix and norm product in alignment
-                    #strength matrix.
+                    # Store normalized dot product for each pair of algorithms
+                    # in the alignment matrix and norm product in alignment
+                    # strength matrix.
                     g_i = self.rec_grads_dict[key_i][i_index]
                     g_j = self.rec_grads_dict[key_j][j_index]
                     alignment = normalized_dot_product(g_i, g_j)
                     self.alignment_matrix[i, j] = alignment
                     self.alignment_weights[i, j] = norm(g_i) * norm(g_j)
 
-        #Keep each list (for each algorithm) of rec_grads only as long as the
-        #truncation horizon by deleting the oldest one.
+        # Keep each list (for each algorithm) of rec_grads only as long as the
+        # truncation horizon by deleting the oldest one.
         for key in self.rec_grads_dict:
             if len(self.rec_grads_dict[key]) >= self.T_lag:
-                del(self.rec_grads_dict[key][0])
+                del (self.rec_grads_dict[key][0])
 
     def resume_sim_at_checkpoint(self, data, i_checkpoint, N=None,
                                  overwrite_checkpoints=False,
@@ -548,7 +551,7 @@ class Simulation:
 
             i_checkpoints = sorted(self.checkpoints.keys())
             j = i_checkpoints.index(i_checkpoint) + 1
-            N = i_checkpoints[j] - i_checkpoints[j-1]
+            N = i_checkpoints[j] - i_checkpoints[j - 1]
             checkpoint_interval = N // 10
 
             self.rnn = rnn
@@ -566,36 +569,3 @@ class Simulation:
                      checkpoint_interval=N,
                      overwrite_checkpoints=overwrite_checkpoints,
                      **kwargs)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

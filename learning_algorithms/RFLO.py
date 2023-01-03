@@ -1,5 +1,7 @@
-from learning_algorithms.Learning_Algorithm import Learning_Algorithm
 import numpy as np
+
+from learning_algorithms.Learning_Algorithm import Learning_Algorithm
+
 
 class RFLO(Learning_Algorithm):
     """Implements the Random-Feedback Local Online learning algorithm (RFLO)
@@ -17,7 +19,6 @@ class RFLO(Learning_Algorithm):
     q_i B_{ij}      (2)
 
     which is implemented in get_rec_grads."""
-
 
     def __init__(self, rnn, alpha, **kwargs):
         """Inits an RFLO instance by specifying the inverse time constant for
@@ -43,14 +44,14 @@ class RFLO(Learning_Algorithm):
         """Updates B by one time step of temporal filtration via the invesre
         time constant alpha (see Eq. 1)."""
 
-        #Get relevant values and derivatives from network
+        # Get relevant values and derivatives from network
         self.a_hat = np.concatenate([self.rnn.a_prev,
                                      self.rnn.x,
                                      np.array([1])])
         self.D = self.rnn.activation.f_prime(self.rnn.h)
         self.M_immediate = self.alpha * np.multiply.outer(self.D, self.a_hat)
 
-        #Update eligibility traces
+        # Update eligibility traces
         self.B = (1 - self.alpha) * self.B + self.M_immediate
 
     def get_rec_grads(self):

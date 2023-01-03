@@ -1,11 +1,14 @@
+from math import floor, ceil
+
 import numpy as np
 from scipy.stats import unitary_group
-from math import floor, ceil
+
 
 def norm(z):
     """Computes the L2 norm of a numpy array."""
 
     return np.sqrt(np.sum(np.square(z)))
+
 
 def clip_norm(z, max_norm=1.0):
     """Clips the norm of an array"""
@@ -24,7 +27,8 @@ def rectangular_filter(signal, filter_size=100):
         filter_size (int): An integer specifcying the width of the rectangular
             filter used for the convolution."""
 
-    return np.convolve(signal, np.ones(filter_size)/filter_size, mode='valid')
+    return np.convolve(signal, np.ones(filter_size) / filter_size, mode='valid')
+
 
 def classification_accuracy(data, y_hat):
     """Calculates the fraction of test data whose argmax matches that of
@@ -39,6 +43,7 @@ def classification_accuracy(data, y_hat):
 
     return acc
 
+
 def normalized_dot_product(a, b):
     """Calculates the normalized dot product between two numpy arrays, after
     flattening them."""
@@ -47,9 +52,10 @@ def normalized_dot_product(a, b):
     b_norm = norm(b)
 
     if a_norm > 0 and b_norm > 0:
-        return np.dot(a.flatten(), b.flatten())/(a_norm * b_norm)
+        return np.dot(a.flatten(), b.flatten()) / (a_norm * b_norm)
     else:
         return 0
+
 
 def half_normalized_dot_product(a, b):
     """Calculates the projection of b onto the unit vector defined by a,
@@ -57,10 +63,11 @@ def half_normalized_dot_product(a, b):
 
     a_norm = norm(a)
 
-    if a_norm >0:
-        return np.dot(a.flatten(),b.flatten())/(a_norm)
+    if a_norm > 0:
+        return np.dot(a.flatten(), b.flatten()) / (a_norm)
     else:
         return 0
+
 
 def get_spectral_radius(M):
     """Calculates the spectral radius of a matrix."""
@@ -68,6 +75,7 @@ def get_spectral_radius(M):
     eigs, _ = np.linalg.eig(M)
 
     return np.amax(np.absolute(eigs))
+
 
 def generate_real_matrix_with_given_eigenvalues(evals):
     """For a given set of complex eigenvalues, generates a real matrix with
@@ -97,12 +105,14 @@ def generate_real_matrix_with_given_eigenvalues(evals):
 
     return np.real(M)
 
+
 def weighted_median(hist, bin_centers):
     """Given the result of a weighted histogram, calculates the weighted
     median."""
 
-    hist_cdf = np.cumsum(hist)/hist.sum()
+    hist_cdf = np.cumsum(hist) / hist.sum()
     return bin_centers[np.where(hist_cdf >= 0.5)[0][0]]
+
 
 def triangular_integer_decomposition(idx):
     """For a given integer idx, finds the maximal triangular number less
@@ -112,7 +122,7 @@ def triangular_integer_decomposition(idx):
     high_n = ceil(np.sqrt(idx * 2) + 2)
 
     n_range = list(range(low_n, high_n + 1))
-    triangular_numbers = np.array([n*(n+1)/2 for n in n_range])
+    triangular_numbers = np.array([n * (n + 1) / 2 for n in n_range])
 
     n = n_range[np.where(triangular_numbers > idx)[0][0] - 1]
 

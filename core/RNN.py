@@ -1,5 +1,6 @@
 import numpy as np
 
+
 class RNN:
     """A vanilla recurrent neural network.
 
@@ -65,19 +66,19 @@ class RNN:
         """Initializes an RNN by specifying its initial parameter values;
         its activation, output, and loss functions; and alpha."""
 
-        #Initial parameter values
+        # Initial parameter values
         self.W_in = W_in
         self.W_rec = W_rec
         self.W_out = W_out
         self.b_rec = b_rec
         self.b_out = b_out
 
-        #Network dimensions
+        # Network dimensions
         self.n_in = W_in.shape[1]
         self.n_h = W_in.shape[0]
         self.n_out = W_out.shape[0]
 
-        #Check dimension consistency.
+        # Check dimension consistency.
         assert self.n_h == W_rec.shape[0]
         assert self.n_h == W_rec.shape[1]
         assert self.n_h == W_in.shape[0]
@@ -85,21 +86,21 @@ class RNN:
         assert self.n_h == b_rec.shape[0]
         assert self.n_out == b_out.shape[0]
 
-        #Define shapes and params lists for convenience later.
+        # Define shapes and params lists for convenience later.
         self.params = [self.W_rec, self.W_in, self.b_rec,
                        self.W_out, self.b_out]
         self.shapes = [w.shape for w in self.params]
 
-        #Activation and loss functions
+        # Activation and loss functions
         self.alpha = alpha
         self.activation = activation
         self.output = output
         self.loss = loss
 
-        #Reset sigma
+        # Reset sigma
         self.reset_sigma = reset_sigma
 
-        #Number of parameters
+        # Number of parameters
         self.n_h_params = (self.W_rec.size +
                            self.W_in.size +
                            self.b_rec.size)
@@ -107,10 +108,10 @@ class RNN:
                          self.W_out.size +
                          self.b_out.size)
 
-        #Params for L2 regularization
-        self.L2_indices = [0, 1, 3] #W_rec, W_in, W_out
+        # Params for L2 regularization
+        self.L2_indices = [0, 1, 3]  # W_rec, W_in, W_out
 
-        #Initial state values
+        # Initial state values
         self.reset_network()
 
     def reset_network(self, sigma=1, **kwargs):
@@ -128,17 +129,17 @@ class RNN:
                 must be of shape (self.n_h). If not specified, determined
                 by h."""
 
-        if 'h' in kwargs.keys(): #Manual reset if specified.
+        if 'h' in kwargs.keys():  # Manual reset if specified.
             self.h = kwargs['h']
-        else: #Random reset by sigma if not.
+        else:  # Random reset by sigma if not.
             self.h = np.random.normal(0, sigma, self.n_h)
 
-        self.a = self.activation.f(self.h) #Specify activations by \phi.
+        self.a = self.activation.f(self.h)  # Specify activations by \phi.
 
-        if 'a' in kwargs.keys(): #Override with manual activations if given.
+        if 'a' in kwargs.keys():  # Override with manual activations if given.
             self.a = kwargs['a']
 
-        self.z = self.W_out.dot(self.a) + self.b_out #Specify outputs from a
+        self.z = self.W_out.dot(self.a) + self.b_out  # Specify outputs from a
 
     def next_state(self, x, a=None, update=True, sigma=0):
         """Advances the network forward by one time step.
@@ -162,24 +163,24 @@ class RNN:
             Updates self.x, self.h, self.a, and self.*_prev, or returns the
             would-be update from given previous state a."""
 
-        if update: #Update network if update is True
+        if update:  # Update network if update is True
             self.x = x
             self.h_prev = np.copy(self.h)
             self.a_prev = np.copy(self.a)
 
             self.h = (self.W_rec.dot(self.a) + self.W_in.dot(self.x) +
-                      self.b_rec) #Calculate new pre-activations
-            if sigma>0: #Add noise to h if sigma is more than 0.
+                      self.b_rec)  # Calculate new pre-activations
+            if sigma > 0:  # Add noise to h if sigma is more than 0.
                 self.noise = sigma * np.random.normal(0, self.alpha, self.n_h)
-                #self.h += self.noise
+                # self.h += self.noise
             else:
                 self.noise = 0
-            #Implement recurrent update equation
-            self.a = ((1 - self.alpha)*self.a +
-                      self.alpha*self.activation.f(self.h)) + self.noise
-        else: #Otherwise calculate would-be next state from provided input a.
+            # Implement recurrent update equation
+            self.a = ((1 - self.alpha) * self.a +
+                      self.alpha * self.activation.f(self.h)) + self.noise
+        else:  # Otherwise calculate would-be next state from provided input a.
             h = self.W_rec.dot(a) + self.W_in.dot(x) + self.b_rec
-            ret = (1 - self.alpha)*a + self.alpha * self.activation.f(h)
+            ret = (1 - self.alpha) * a + self.alpha * self.activation.f(h)
             if sigma > 0:
                 noise = np.random.normal(0, sigma, self.n_h)
                 ret += noise
@@ -210,7 +211,7 @@ class RNN:
                 what values of the recurrent weights to use in calculating
                 the Jacobian."""
 
-        #Use kwargs instead of defaults if provided
+        # Use kwargs instead of defaults if provided
         if 'h' in kwargs.keys():
             h = kwargs['h']
         else:
@@ -220,13 +221,13 @@ class RNN:
         else:
             W_rec = np.copy(self.W_rec)
 
-        #Calculate Jacobian
-        D = np.diag(self.activation.f_prime(h)) #Nonlinearity derivative
+        # Calculate Jacobian
+        D = np.diag(self.activation.f_prime(h))  # Nonlinearity derivative
         a_J = self.alpha * D.dot(W_rec) + (1 - self.alpha) * np.eye(self.n_h)
 
-        if update: #Update if update is True
+        if update:  # Update if update is True
             self.a_J = np.copy(a_J)
-        else: #Otherwise return
+        else:  # Otherwise return
             return a_J
 
     def get_network_speed(self, a=None):
@@ -237,7 +238,7 @@ class RNN:
             a = self.a
         delta_a = self.activation.f(self.W_rec.dot(a) + self.b_rec) - a
 
-        return (self.alpha**2 / 2) * np.square(delta_a).sum()
+        return (self.alpha ** 2 / 2) * np.square(delta_a).sum()
 
     def get_network_speed_gradient(self, a=None):
         """Calculates and returns the gradient of the (squared) network speed
@@ -253,7 +254,7 @@ class RNN:
         delta_w = (D * self.W_rec.T).T - np.eye(self.n_h)
         ret = delta_a.dot(delta_w)
 
-        return (self.alpha**2) * ret
+        return (self.alpha ** 2) * ret
 
     def get_network_speed_gradient_wrt_weights(self, a=None):
         """Calculates and returns the gradient of the (squared) network speed
@@ -269,6 +270,4 @@ class RNN:
         x = np.zeros_like(self.x)
         a_hat = np.concatenate([a, x, np.array([1])])
 
-        return (self.alpha**2) * (np.outer(D, a_hat).T * delta_a).T
-
-
+        return (self.alpha ** 2) * (np.outer(D, a_hat).T * delta_a).T

@@ -1,5 +1,7 @@
-from learning_algorithms.Learning_Algorithm import Learning_Algorithm
 import numpy as np
+
+from learning_algorithms.Learning_Algorithm import Learning_Algorithm
+
 
 class REINFORCE(Learning_Algorithm):
     def __init__(self, rnn, sigma=0, **kwargs):
